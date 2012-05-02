@@ -1,3 +1,9 @@
+body {
+	padding:0;
+	margin:0;
+	font: 14px/1.4 sans-serif;
+}
+
 #buttons {
 	margin:0;
 	padding:0;
@@ -57,6 +63,15 @@
 	background-position:0 2px;
 }
 
+#buttons li a.sources {
+	background-position:1px 3px;
+}
+
+#buttons li a.search {
+	background-position:41px 3px;
+}
+
+
 @-webkit-keyframes progress {
     from {
 		background-color: rgba(0,0,0,1);
@@ -106,7 +121,26 @@
  	-webkit-animation-delay: 0s;
 }
 
-#info {
+.button {
+			background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#bbb));
+			border:1px solid #aaa;
+			color:#000;
+			line-height:43px;
+			margin-top:30px;
+			padding:10px 20px;
+			text-align:center;
+			white-space:nowrap;
+			-webkit-border-radius:7px;
+			-webkit-user-select:none;
+			text-decoration: none;
+			-webkit-appearance: none;
+}
+
+.button.submit {
+
+}
+
+.panel {
 	background: #fff;
 	background: rgba(255,255,255,0.9);
 	background: -webkit-gradient(linear, left top, left bottom, from(rgba(255,255,255,0.9)), to(rgba(255,255,255,0.4)));
@@ -119,41 +153,70 @@
 	right:10px;
 	top:10px;
 	-webkit-border-radius: 20px;
+	overflow-y: auto;
 }
 
-#info h1, #info p {
+.panel h1, .panel p {
 	margin: 0 0 15px;
 }
 
-#info h1 {
+.panel h1 {
 	font-weight: bold;
 	font-size: 16px;
 }
 
-#info input[type=button] {
-	background: #ccc;
-	background: rgba(235,235,235,0.8);
-	background: -webkit-gradient(linear, left top, left bottom, from(rgba(235,235,235,0.8)), to(rgba(120,120,120,0.9)));
-	border: solid 4px #aaa;	
-	bottom:10px;
-	color: #000;
-	display: block;
-	font-weight: bold;
-	font-size: 16px;
-	left:10px;
-	padding: 10px 15px;
-	position:absolute;
-	right:10px;
-	-webkit-border-radius: 10px;
-	-webkit-appearance: square-button ;
+		#sources ul,
+		#sources ul li {
+			list-style: none;
+			margin:0;
+			padding: 0;
+		}
 
-}
+		#sources ul li {
+			float: left;
+			width: 110px;
+			height: 80px;
+			margin: 0 10px 10px 0;
+		}
+/*		
+		#sources ul li:nth-child(even) {
+			margin: 0 0 10px 0;
+		}
+*/		
+		#sources ul li a {
+			display: block;
+			width: 100px;
+			height: 80px;
+			background-repeat: no-repeat;
+			background-position: top center;
+			overflow: hidden;
+			background-color: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#bbb));
+			-webkit-border-radius:10px;			
+			border: solid 1px #ccc;
+			overflow: hidden;
+		}
+		
 
-#info input[type=button]:hover {
-	background: #ddd;
-	background: -webkit-gradient(linear, left top, left bottom, from(rgba(200,200,200,0.8)), to(rgba(40,40,40,0.9)));
-	border: solid 4px #999;	
-}
+		#sources ul li a span{
+			padding: 0px 10px;
+			margin-top: 55px;
+			display: block;
+			width: 80px;
+			overflow: hidden;
+			border-top: solid 1px #ccc;
+			background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#bbb));
+			font-size: 10px;
+			color: #000;
+			overflow: hidden;
+			white-space: nowrap;
+			line-height: 25px;
+			-webkit-border-bottom-left-radius:10px;
+			-webkit-border-bottom-right-radius:10px;
+			overflow: hidden;
+			-webkit-text-overflow: ellipsis;
+			text-overflow: ellipsis;
+		}
+
 
 #copyright {
 	position: absolute;
@@ -164,14 +227,4 @@
 	text-shadow: #000 1px 1px 3px;
 	-webkit-text-shadow: rgba(0,0,0,0.5) 1px 1px 3px;
 	font: 10px/1 Arial, sans-serif;
-}
-
-@media screen and (max-device-width: 320px) {
-	#buttons {
-		right: 15px;
-		top:15px;
-	}
-	#info input[type=button] {
-		-webkit-appearance: square-button ;
-	}
 }
