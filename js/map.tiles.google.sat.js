@@ -5,7 +5,7 @@
 			return {
 				init : function(){
 					map.tileprovider =	function(x,y,z){
-						return "http://khm1.google.com/kh/v=66&x="+x+"&y="+y+"&z="+z;
+						return "http://khm1.google.de/kh/v=109&src=app&x="+x+"&y="+y+"&z="+z;
 					};
 				}
 			};
