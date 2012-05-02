@@ -9,15 +9,13 @@ CACHE MANIFEST
 index.html
 css/map.css
 css/ui.css
+css/form.css
 images/ui.png
 images/blank.gif
 images/marker.png
 js/map.js
-js/map.ui.ini.js
-js/map.ui.info.js
-js/map.ui.geolocation.js
-js/map.tiles.sat.js
-js/map.tiles.db.js
+js/map.ini.js
+js/map.geolocation.js
 
 NETWORK:
 *

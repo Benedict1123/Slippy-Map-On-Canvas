@@ -17,6 +17,10 @@ width:100%;
 body * {
 pointer-events: auto;
 -webkit-palm-mouse-target: auto;
+-webkit-touch-callout: auto;
+-webkit-text-size-adjust: auto;
+-webkit-user-select:auto;
+
 }
 
 #map {
