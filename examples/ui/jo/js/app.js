@@ -109,10 +109,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 id: "mapnik",
             },
             {
-                title: "OpenStreepMap, OSMA",
-                id: "osma"
-            },
-            {
                 title: "Goolge, Satellite Images",
                 id: "gsat"
             },
@@ -120,10 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 title: "Goolge, Street Map",
                 id: "gmap"
             },
-            {
-                title: "Goolge, Topo",
-                id: "gtopo"
-            }]), new joFooter([
+            ]), new joFooter([
             new joDivider(), canceltile = new joButton("Back")])]);
             tilemenu.activate = function () {
                 // maybe this should be built into joMenu...
@@ -135,27 +128,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 switch (id) {
                 case "gmap":
                     tileprovider = function (x, y, z) {
-                        return "http://mt1.google.com/vt/x=" + x + "&y=" + y + "&z=" + z;
+                        return "http://mt1.google.com/vt/lyrs=m@176000000&hl=de&src=app&x=" + x + "&y=" + y + "&z=" + z;
                     }
                     break;
                 case "gsat":
                     tileprovider = function (x, y, z) {
-                        return "http://khm1.google.com/kh/v=66&x=" + x + "&y=" + y + "&z=" + z;
-                    }
-                    break;
-                case "gtopo":
-                    tileprovider = function (x, y, z) {
-                        return "http://mt0.google.com/vt/lyrs=t&x=" + x + "&y=" + y + "&z=" + z;
-                    }
-                    break;
-                case "osma":
-                    tileprovider = function (x, y, z) {
-                        var rand = function (n) {
-                            return Math.floor(Math.random() * n);
-                        };
-                        var sub = ["a", "b", "c"];
-                        var url = "http://" + sub[rand(3)] + ".tah.openstreetmap.org/Tiles/tile/" + z + "/" + x + "/" + y + ".png";
-                        return url;
+                        return "http://khm1.google.de/kh/v=109&src=app&x=" + x + "&y=" + y + "&z=" + z;
                     }
                     break;
                 default:
@@ -243,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         foundmenulist.selectEvent.subscribe(function (id) {
                             stack.push(map);
-                            canvas.recenter(parseFloat(id[1]), parseFloat(id[0]), parseFloat(id[2]));
+                            canvas.coords({lat:parseFloat(id[0]), lon:parseFloat(id[1]), zoom:parseFloat(id[2])});
 							addmarker(id[3]);
                         });
                         stack.push(foundmenu);
