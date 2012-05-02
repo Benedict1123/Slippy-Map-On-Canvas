@@ -13,12 +13,7 @@
                         geo.gl = navigator.geolocation;
                         console.log("found native geolocation");
                     } catch (e_nogeolocation) {
-                        try {
-                            geo.gl = google.gears.factory.create('beta.geolocation');
-                            console.log("no geolocation, using gears");
-                        } catch (e_nogears) {
-                            console.log("no geolocation or gears plugin found", e_nogears);
-                        }
+                        console.log("no geolocation or gears plugin found", e_nogears);
                     }
                 },
                 location: function (success, error, options) {
@@ -28,10 +23,10 @@
                     } catch (e) {}
                     geo.gl.getCurrentPosition(
                     success || geo.displayPosition, error || geo.displayError, options || {
-                        maximumAge: 600000,
-                        timeout: 3000,
-                        enableHighAccuracy: false,
-                        responseTime: 2
+                        maximumAge: 600,
+                        timeout: 10000,
+//                        enableHighAccuracy: false,
+//                        responseTime: 2
                     });
                 },
                 watch: function (success, error, options) {
@@ -69,7 +64,7 @@
                     } else {
                         map.recenter(position.coords.longitude, position.coords.latitude);
                     }
-                    geolastUpdate = now();
+                    geo.lastUpdate = now();
                     try {
                         document.getElementById("geo").removeAttribute("dispatched");
                         document.getElementById("geo").setAttribute("success", true);
