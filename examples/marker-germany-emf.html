@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html manifest="../map.manifest">
+	<head>
+		<meta charset="utf-8">
+		<title>Slippy Map on Canvas (HTML5) | markers | opencellid</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<link rel="apple-touch-icon-precomposed" href="../images/touch-icon.png" />
+		<link href="../css/map.css" rel="stylesheet" type="text/css" media="all" />
+		<link href="../css/infowindow.css" rel="stylesheet" type="text/css" media="all" />
+		<link href="../css/ui.css" rel="stylesheet" type="text/css" media="all" />
+		<style>
+			#loading {
+				position: absolute;
+				top:0;
+				left:0;
+				right:0;
+				bottom:0;
+				background: rgba(0,0,0,0.7);
+				display: none;
+				text-align:center;
+			}
+			#loading .inner {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				width: 120px;
+				height: 40px;
+				line-height: 40px;
+				margin: -20px 0px 0px -60px;
+				border: solid 1px #000;
+				background: rgba(255,255,255,0.9);
+				-webkit-border-radius: 11px;
+				color: #000;
+				font-weight: bold;
+			}
+		</style>
+		<script src="../js/map.js" type="text/javascript"></script>
+		<script src="../js/map.infowindow.js" type="text/javascript"></script>
+
+		<script type="text/javascript">
+			document.addEventListener('DOMContentLoaded', function(){
+
+				var map =  slippymap("map", true, 15, 13.4033, 52.5462).init();
+
+				showCellTowers = function(){
+					var markers = {}
+					var bbox = map.getVisibleBounds();
+					var latMin = bbox['left'];
+					var lonMin = bbox['bottom'];
+					var latMax = bbox['right'];
+					var lonMax  = bbox['top'];
+					var url = 'http://emf2.bundesnetzagentur.de/DataService.asmx/GetStandorte';
+					var params = '{"boundingBox":['+lonMax+','+latMax+','+lonMin+','+latMin+']}';
+//					var params = '{"boundingBox":[52.508072051744215,13.472199440002441,52.49579374473863,13.438725471496582]}';
+console.log(params);
+					var request = new XMLHttpRequest();
+					document.querySelectorAll("#loading .inner")[0].innerHTML = "Loading...";
+					document.querySelectorAll("#loading")[0].style.display='block';					
+					request.open("POST", url, true);
+					request.onload = function(){
+						var placemarks = [];
+						console.log(request.responseText);
+						var data = JSON.parse(request.responseText);
+						console.log(data);
+						placemarks = data.d;
+						for(var i=0; i<placemarks.length;i++){
+							var placemark = placemarks[i];
+							var icon = "../images/marker.png";
+							markers[i] = { 	src : icon,
+											lon : parseFloat(placemark.x),
+											lat : parseFloat(placemark.y),
+											offsetX : -11,
+											offsetY : -25,
+											html : "FID: "+ placemark.f+"<br />Standortbescheinigungs-Nr. "+placemark.s
+							}
+						}
+						map.setMarkers(markers);
+						document.querySelectorAll("#loading .inner")[0].innerHTML = "Found: "+placemarks.length;
+						setTimeout(function(){
+							document.querySelectorAll("#loading")[0].style.display='none';
+						},1000);
+
+					};
+					request.setRequestHeader("Content-type", "application/json; charset=UTF-8");
+					request.send(params);
+				}
+				document.querySelectorAll("#buttons .zoomin")[0].addEventListener('click', map.zoomIn, false);
+				document.querySelectorAll("#buttons .zoomout")[0].addEventListener('click', map.zoomOut, false);
+				document.querySelectorAll("#buttons .info")[0].addEventListener('click', showCellTowers, false);
+				document.querySelectorAll("#map")[0].addEventListener('mousedown', map.infowindow.featureInfo, false);
+				map.addMovedListeners(map.infowindow.clearInfo);
+				map.addZoomedListeners(map.infowindow.clearInfo);
+			}, false);
+		</script>	
+	</head>
+	<body>
+		<canvas id="map">
+			Your  browser doesn't support canvas elements.			
+		</canvas>
+		<ul id="buttons">
+			<li><a class="zoomin">+</a></li>
+			<li><a class="zoomout">-</a></li>
+			<li><a class="info">i</a></li>
+		</ul>
+		<div id="loading">
+			<div class="inner">
+			</div>
+		</div>
+	</body>
+</html>

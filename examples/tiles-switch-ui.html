@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html manifest="../manifest.php?v=0.0.6">
+	<head>
+		<meta charset="utf-8">
+		<title>Slippy Map on Canvas (HTML5) | switch sources extended</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<link rel="apple-touch-icon-precomposed" href="../images/touch-icon.png" />
+		<link href="../css/map.css" rel="stylesheet" type="text/css" media="all" />
+		<link href="../css/form.css" rel="stylesheet" type="text/css" media="all" />
+		<link href="../css/ui.css" rel="stylesheet" type="text/css" media="all" />
+		<script src="../js/map.js" type="text/javascript"></script>
+		<script src="../js/map.appcache.js" type="text/javascript"></script>
+		<script src="../js/map.ini.js" type="text/javascript"></script>
+		<script src="../js/map.geolocation.js" type="text/javascript"></script>
+		<script type="text/javascript">
+			document.addEventListener('DOMContentLoaded', function(){
+				var currentTileProvider;
+				/* caches stores tiles of sources, not currently used */
+				var caches = [];
+				var init = function(){
+					currentTileProvider = -1;
+					nextTileSource();
+				}
+				
+				var lookup = function(){
+					var term = document.getElementById("searchterm").value;
+					var nominatim = "http://nominatim.openstreetmap.org/search?q=";
+					nominatim += escape(term);
+					nominatim += '&format=json&limit=1';
+					
+					var xmlHttp = new XMLHttpRequest();
+					var coords = {lon: 0, lat: 0, zoom: 1};
+					if (xmlHttp) {
+					console.log("get",nominatim);
+						xmlHttp.open('GET', nominatim, true);
+						xmlHttp.onreadystatechange = function () {
+							if (xmlHttp.readyState == 4) {
+								if(JSON){
+									result = JSON.parse(xmlHttp.responseText);
+									coords.lon = result[0].lon;
+									coords.lat = result[0].lat;
+									coords.zoom = map.zoom() || 1;
+								}
+								console.log(result, coords);
+								map.coords(coords);
+							}
+						};
+						xmlHttp.send(null);
+					}
+					return false;
+				}
+				
+				var nextTileSource = function(){
+					caches[currentTileProvider] = map.getTileCache();
+					currentTileProvider = (++currentTileProvider) % tileProviders.length;
+					map.setTileProvider(tileProviders[currentTileProvider].provider, caches[currentTileProvider]);
+					document.getElementById('copyright').innerHTML = tileProviders[currentTileProvider].copyright;
+				}
+
+				var switchTileSource = function(index){
+					caches[currentTileProvider] = map.getTileCache();
+					currentTileProvider = index % tileProviders.length;
+					map.setTileProvider(tileProviders[currentTileProvider].provider, caches[currentTileProvider]);
+					document.getElementById('copyright').innerHTML = tileProviders[currentTileProvider].copyright;
+				}
+
+				var wms_request = function(baseUrl, layers, x, y, z, size){
+					function tile2lon(x, z) {
+						return (x / Math.pow(2, z) * 360 - 180);
+					};
+			
+					function tile2lat(y, z) {
+						var n = Math.PI - 2 * Math.PI * y / Math.pow(2, z);
+						return (180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n))));
+					}
+					var url = baseUrl;
+					var bbox = [tile2lon(x, z), tile2lat(y + 1, z), tile2lon(x + 1, z), tile2lat(y, z)];
+					url += "?request=GetMap";
+					url += "&service=wms";
+					url += "&version=1.1.0";
+					url += "&layers="+layers;
+					url += "&styles=";
+					url += "&format=image/png";
+					url += "&srs=EPSG:4326"; //54004??
+					url += "&bbox=" + bbox.join(",");
+					url += "&width="+(size || 256);
+					url += "&height="+(size || 256);
+				
+					return url;
+				
+				}
+
+				var showSources = function(div){
+					var index, source, thumb, coords, lon, lat, zoom, xtile, ytile, html;
+					coords = map.coords();
+					
+					lon = coords.lon;
+					lat = coords.lat;
+					
+					zoom = map.zoom() || 1;
+										
+					xtile = Math.round((lon + 180)/360*(1<<zoom)) ;
+					ytile = Math.round((1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2*(1<<zoom));
+					
+					div.innerHTML = "";
+					for(index=0; index<tileProviders.length; index++){
+						source = tileProviders[index];
+						bbox = tileProviders[index].bbox;
+						
+						if(!bbox || (bbox && lon>=bbox[0] && lat>=bbox[1] && lon<=bbox[2] && lat<=bbox[3])){
+							thumb = tileProviders[index].provider(xtile, ytile, zoom);
+						} else {
+							thumb = "../images/outofbbox.gif";
+						}
+						html = document.createElement('li');
+						html.setAttribute("data-index",index);
+						html.addEventListener('click', function(){
+							switchTileSource(this.getAttribute("data-index"));
+							document.getElementById("sources").style.display="none";
+							return false;
+						});
+						html.innerHTML = '<a style="background: url('+thumb+');">'+
+									'<span>'+source.title+'</span>'+
+									'</a>';
+						
+						div.appendChild(html);
+					}
+				}
+				
+				var tileProviders = [	
+										{
+											id: "mapnik",
+											title: "OSM (mapnik)",
+											copyright : "Data by Openstreetmap",
+											provider : function (x, y, z) {
+												var rand = function (n) {
+													return Math.floor(Math.random() * n);
+												};
+												var sub = ["a", "b", "c"];
+												var url = "http://" + sub[rand(3)] + ".tile.openstreetmap.org/" + z + "/" + x + "/" + y + ".png";
+												return url;
+											}
+										},
+										{
+											id: "osm-de",
+											title: "OSM (de)",
+											copyright : "Data by Openstreetmap",
+											provider : function (x, y, z) {
+												var rand = function (n) {
+													return Math.floor(Math.random() * n);
+												};
+												var sub = ["a", "b", "c"];
+												var url = "http://" + sub[rand(3)] + ".tile.openstreetmap.de/tiles/osmde/" + z + "/" + x + "/" + y + ".png";
+												return url;
+											}
+										},
+										{
+											id: "opencyclemap",
+											title: "OpenCycleMap",
+											copyright : "Data by OpenCycleMap",
+											provider : function (x, y, z) {
+												var rand = function (n) {
+													return Math.floor(Math.random() * n);
+												};
+												var sub = ["a", "b", "c"];
+												var url = "http://" + sub[rand(3)] + ".tile.opencyclemap.org/cycle/" + z + "/" + x + "/" + y + ".png";
+												return url;
+											}
+										},
+										{
+											id: "gsat",
+											title: "Google (Sat)",
+											copyright : "Data by Google",
+											provider : function(x,y,z){
+												return "http://khm1.google.de/kh/v=109&src=app&x="+x+"&y="+y+"&z="+z;
+											}
+										},
+										{
+											id: "gmap",
+											title: "Google (Map)",
+											copyright : "Data by Google",
+											provider : function(x,y,z){
+												return "http://mt1.google.com/vt/lyrs=m@176000000&hl=de&src=app&x="+x+"&y="+y+"&z="+z;
+											}
+										},
+										{
+											id: "mv",
+											title: "GDI Mecklenburg-V.",
+											copyright : "Data by Gaia MV",
+											bbox: [10.3494,53.0058,14.6948,54.7744],
+											provider : function(x,y,z){
+												return wms_request("http://www.gaia-mv.de/dienste/gdimv_dtk","gdimv_dtk", x, y, z ,512);
+											}
+										},
+										{
+											id: "bb",
+											title: "Berlin Brandenburg",
+											copyright : "Data by BB",
+											bbox: [11.7,51.3,14.8,53.5],
+											provider : function(x,y,z){
+												return wms_request("http://isk.geobasis-bb.de/ows/dnm.php","bg,siedlung,vegetation,gewaesser,transport,verkehrsobjekte,strassennamen,ortsnamen,gewaessernamen", x, y, z);
+											}
+										},
+										{
+											id: "dkt",
+											title: "Liegenschaftskarte",
+											copyright : "Data by LGB",
+											bbox: [11.2,51.3,14.8,53.5],
+											provider : function(x,y,z){
+												return wms_request("http://isk.geobasis-bb.de/ows/dtk50.php","0", x, y, z, 512);
+											}
+										}
+
+
+				];
+				var map =  slippymap("map", true, 12, 13.31, 53.21, {}, {}, tileProviders[0].provider).init();
+				document.querySelectorAll("#buttons .zoomin")[0].addEventListener('click', map.zoomIn, false);
+				document.querySelectorAll("#buttons .zoomout")[0].addEventListener('click', map.zoomOut, false);
+
+				document.querySelectorAll("#buttons .gps")[0].addEventListener('click', function(){
+					map.geolocation.location(function (position) {
+							map.recenter(position.coords.longitude, position.coords.latitude);
+							try {
+								document.getElementById("geo").removeAttribute("dispatched");
+								document.getElementById("geo").setAttribute("success", true);
+							} catch (e) {}
+						}, function (error) {
+							switch(error.code){	 
+								case error.PERMISSION_DENIED: 
+									alert("user did not share geolocation data");  
+									break;	
+								case error.POSITION_UNAVAILABLE: 
+									alert("could not detect current position");	 
+									break;	
+								case error.TIMEOUT: 
+									alert("retrieving position timed out");	 
+									break;	
+								default: 
+									alert("unknown error");	 
+									break;	
+							}  
+							try {
+								document.getElementById("geo").removeAttribute("dispatched");
+								document.getElementById("geo").setAttribute("error", true);
+							} catch (e) {}
+						}, {
+//						maximumAge: 1000, 
+//						timeout: 10000,
+//						enableHighAccuracy: true,
+					});
+				}, false);
+				
+				document.querySelectorAll("#buttons .info")[0].addEventListener('click', function(){
+					document.getElementById("info").style.display = "block";				
+					
+					document.querySelectorAll("#info #console")[0].innerHTML = function(){
+						var html, coords, zoom;
+
+						coords = map.coords();
+					
+						html = "lon: "+coords.lon+"<br />";
+						html += "lat: "+coords.lat+"<br />";
+						html += "zoom: "+map.zoom()+"<br />";
+
+						return html;
+					}();
+					document.querySelectorAll("#info .close")[0].addEventListener('click', function(){
+						document.getElementById("info").style.display = "none";				
+					}, false);
+				}, false);
+
+
+				document.querySelectorAll("#buttons .search")[0].addEventListener('click', function(){
+					document.getElementById("search").style.display = "block";				
+					document.querySelectorAll("#search .submit")[0].addEventListener('click', function(){
+						document.getElementById("search").style.display = "none";
+						lookup();
+					}, false);
+				}, false);
+
+				document.querySelectorAll("#buttons .sources")[0].addEventListener('click', function(){
+					document.getElementById("sources").style.display = "block";				
+					showSources(document.querySelectorAll("#sources ul")[0]);
+					document.querySelectorAll("#sources .close")[0].addEventListener('click', function(){
+						document.getElementById("sources").style.display = "none";				
+					}, false);
+				}, false);
+
+				
+				init();
+			}, false);
+
+		</script>
+	</head>
+	<body>
+		<canvas id="map">
+			Your  browser doesn't support canvas elements.			
+		</canvas>
+		<div id="copyright">Data by NASA</div>
+		<ul id="buttons">
+			<li><a class="zoomin">+</a></li>
+			<li><a class="zoomout">-</a></li>
+			<li><a class="gps" id="geo">x</a></li>
+			<li><a class="info">i</a></li>
+			<li><a class="sources">=</a></li>
+			<li><a class="search">?</a></li> 
+		</ul>
+		<div id="info" class="panel">
+			<p id="console">
+			</p>
+			<a class="close button" href="#map">
+				Back
+			</a>
+		</div>
+		<div id="search" class="panel">
+			<h1>Searching for things</h1>
+			<p>
+				This search uses <a href="http://nominatim.openstreetmap.org">OSM Name Finder</a>.			
+			</p>
+			<form onsubmit="return false;">
+				<input type="text" id="searchterm" value="Berlin" />
+				<input type="submit" class="button submit" value="Find" />
+			</form>
+
+			<a class="close button" href="#map">
+				Back
+			</a>
+		</div>
+		<div id="sources" class="panel">
+			<h1>
+				Map sources
+			</h1>
+			<ul>
+				<!-- dyn list -->
+			</ul>
+			<br style="clear: both" />
+			<a class="close button" href="#map">
+				Back
+			</a>
+		</div>
+	</body>
+</html>
