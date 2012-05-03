@@ -2,6 +2,8 @@
     if (typeof window.slippymap !== 'undefined') {
         window.slippymap.extension.ini = function (map) {
             var ini = {
+            	lastUpdate : 0,
+            	updateDefered : false,
                 prefix: 'slippymap_' + map.div + '_',
                 init: function () {
                     map.movedListeners.push(ini.update);
@@ -23,6 +25,19 @@
                     }
                 },
                 update: function () {
+                	var now = function () {
+                            return (new Date()).getTime();
+                    }();
+                    if(now - ini.lastUpdate < 1000) {
+                    	if(!ini.updateDefered){
+                    	ini.updateDefered = true;
+                    	setTimeout(function(){
+                    		ini.update();
+                    		ini.updateDefered = false;
+                    	}, 1000);
+                    	}
+                    	return;
+                    }
                     console.log("localStorage, update");
                     var coords = map.pos.getLonLat();
                     try {
@@ -32,6 +47,7 @@
                     } catch (e) {
                         console.log('localStorage: ' + e);
                     }
+                    ini.lastUpdate = now;
                 }
             };
             return ini;
