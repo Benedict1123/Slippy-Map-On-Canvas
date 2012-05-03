@@ -58,7 +58,7 @@
                         map.renderer.refresh();
                         map.events.init();
                     } else {
-                        //$.console.log("canvas not found");
+                        //$.slippymap.debug("canvas not found");
                     }
                 },
                 markers: options.markers,
@@ -114,7 +114,7 @@
                     var coords = {
                         x: map.pos.lon2posX(lon),
                         y: map.pos.lat2posY(lat),
-                        z: z
+                        z: zoom
                     };
                     map.pos.setCenter(coords);
                 },
@@ -481,8 +481,8 @@
                             for (var marker in map.markers) {
                                 if (map.markers.hasOwnProperty(marker)) {
                                     if (map.markers[marker].img && map.markers[marker].img.complete) {
-                                        x = $.Math.round((map.pos.lon2posX(map.markers[marker].lon) - xMin) / zp * zf) + map.markers[marker].offsetX - offsetX;
-                                        y = $.Math.round((map.pos.lat2posY(map.markers[marker].lat) - yMin) / zp * zf) + map.markers[marker].offsetY - offsetY;
+                                        var x = $.Math.round((map.pos.lon2posX(map.markers[marker].lon) - xMin) / zp * zf) + map.markers[marker].offsetX - offsetX;
+                                        var y = $.Math.round((map.pos.lat2posY(map.markers[marker].lat) - yMin) / zp * zf) + map.markers[marker].offsetY - offsetY;
                                         if (x > -50 && x < map.renderer.canvas.width + 50 && y > -50 && y < map.renderer.canvas.height + 50) {
                                             try {
                                                 map.renderer.context.globalAlpha = map.markers[marker].alpha || alpha;
@@ -956,27 +956,43 @@
                 },
                 refresh: function () {
                     map.renderer.refresh();
+                    return this;
                 },
-                setWidth: function (width) {
-                    map.renderer.canvas.width = width;
+                width: function (width) {
+                	if (typeof width !== 'number') {
+	                    return map.renderer.canvas.width;
+					} else {
+	                    map.renderer.canvas.width = width;
+	                }
+                    return this;
                 },
-                setHeight: function (height) {
-                    map.renderer.canvas.height = height;
+                height: function (height) {
+                	if (typeof height !== 'number') {
+	                    return map.renderer.canvas.height;
+					} else {
+	                    map.renderer.canvas.height = height;
+	                }
+                    return this;
                 },
                 addMovedListeners: function (listener) {
                     map.movedListeners.push(listener);
+                    return this;
                 },
                 addMoveEndListeners: function (listener) {
                     map.moveEndListeners.push(listener);
+                    return this;
                 },
                 addZoomedListeners: function (listener) {
                     map.zoomedListeners.push(listener);
+                    return this;
                 },
                 zoomIn: function (event, options) {
                     map.events.zoomIn(event, options);
+                    return this;
                 },
                 zoomOut: function (event, options) {
                     map.events.zoomOut(event, options);
+                    return this;
                 },
                 getTileCache: function () {
                     if (map.renderer.tiles.length == 1) {
@@ -990,20 +1006,32 @@
                     map.renderer.tiles = cache || [];
                     map.renderer.refresh();
                 },
-                setMarkers: function (markers) {
-                    map.markers = markers;
-                    map.renderer.refresh();
+                markers: function (markers) {
+                	if (typeof markers !== 'object') {
+	                    return map.markers;
+					} else {
+	                    map.markers = markers;
+    	                map.renderer.refresh();
+    	            }
+                    return this;
                 },
-                getMarkers: function () {
-                    return map.markers;
+                marker: function (id, marker) {
+                	if (id && typeof marker !== 'object') {
+	                    return map.markers[id];
+					} else {
+	                    map.markers[id] = marker;
+    	                map.renderer.refresh();
+    	            }
+                    return this;
                 },
-                setMarker: function (id, marker) {
-                    map.markers[id] = marker;
-                    map.renderer.refresh();
-                },
-                setTracks: function (tracks) {
-                    map.tracks = tracks;
-                    map.renderer.refresh();
+                tracks: function (tracks) {
+                	if (typeof tracks !== 'object') {
+	                    return map.tracks;
+					} else {
+	                    map.tracks = tracks;
+    	                map.renderer.refresh();
+    	            }
+                    return this;    	            
                 },
                 tileSize: function (size) {
                     if (typeof size !== 'number') {
@@ -1018,9 +1046,21 @@
                     } else {
                         map.useFractionalZoom = state;
                     }
+                },
+                scrollMomentum: function (state) {
+                    if (state !== true && state !== false) {
+                        return map.scrollMomentum;
+                    } else {
+                        map.scrollMomentum = state;
+                    }
                 }
             };
         };
+        slippymap.debug = function(params){
+       		if(typeof console !== "undefined") {
+       			alert(params);
+       		}
+       	};
         slippymap.extension = {};
         window.slippymap = slippymap;
     }

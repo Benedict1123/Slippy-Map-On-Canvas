@@ -35,10 +35,10 @@
 					}
 					var marker, markers = [];
 					if(query_results.error){
-						console.log("YQL error: "+query_results.error.description);
+						slippymap.debug("YQL error: "+query_results.error.description);
 					} else {
 						var geonames = query_results.query.results.geonames || [];
-						console.log("Found "+geonames.length+" geonames");
+						slippymap.debug("Found "+geonames.length+" geonames");
 						for(var i=0; i<geonames.length; i++){
 							marker = geonames[i].marker;
 							marker.src = "../images/marker.png";
@@ -50,7 +50,7 @@
 							markers.push(marker);
 						}
 					}
-					map.setMarkers(markers);
+					map.markers(markers);
 				}
 				/* send xhr request */
 				dataRequest = new XMLHttpRequest();

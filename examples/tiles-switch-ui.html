@@ -32,7 +32,7 @@
 					var xmlHttp = new XMLHttpRequest();
 					var coords = {lon: 0, lat: 0, zoom: 1};
 					if (xmlHttp) {
-					console.log("get",nominatim);
+					slippymap.debug("get",nominatim);
 						xmlHttp.open('GET', nominatim, true);
 						xmlHttp.onreadystatechange = function () {
 							if (xmlHttp.readyState == 4) {
@@ -42,7 +42,7 @@
 									coords.lat = result[0].lat;
 									coords.zoom = map.zoom() || 1;
 								}
-								console.log(result, coords);
+								slippymap.debug(result, coords);
 								map.coords(coords);
 							}
 						};
@@ -223,36 +223,7 @@
 				document.querySelectorAll("#buttons .zoomout")[0].addEventListener('click', map.zoomOut, false);
 
 				document.querySelectorAll("#buttons .gps")[0].addEventListener('click', function(){
-					map.geolocation.location(function (position) {
-							map.recenter(position.coords.longitude, position.coords.latitude);
-							try {
-								document.getElementById("geo").removeAttribute("dispatched");
-								document.getElementById("geo").setAttribute("success", true);
-							} catch (e) {}
-						}, function (error) {
-							switch(error.code){	 
-								case error.PERMISSION_DENIED: 
-									alert("user did not share geolocation data");  
-									break;	
-								case error.POSITION_UNAVAILABLE: 
-									alert("could not detect current position");	 
-									break;	
-								case error.TIMEOUT: 
-									alert("retrieving position timed out");	 
-									break;	
-								default: 
-									alert("unknown error");	 
-									break;	
-							}  
-							try {
-								document.getElementById("geo").removeAttribute("dispatched");
-								document.getElementById("geo").setAttribute("error", true);
-							} catch (e) {}
-						}, {
-//						maximumAge: 1000, 
-//						timeout: 10000,
-//						enableHighAccuracy: true,
-					});
+					map.geolocation.location();
 				}, false);
 				
 				document.querySelectorAll("#buttons .info")[0].addEventListener('click', function(){
@@ -301,7 +272,7 @@
 		<canvas id="map">
 			Your  browser doesn't support canvas elements.			
 		</canvas>
-		<div id="copyright">Data by NASA</div>
+		<div id="copyright">Data by OSM</div>
 		<ul id="buttons">
 			<li><a class="zoomin">+</a></li>
 			<li><a class="zoomout">-</a></li>

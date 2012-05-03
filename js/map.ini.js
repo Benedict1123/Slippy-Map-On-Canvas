@@ -21,7 +21,7 @@
                         if(zoom>-1){
                         	map.pos.z = zoom;
                         }                    } catch (e) {
-                        console.log('localStorage: ' + e);
+                        slippymap.debug('localStorage: ' + e);
                     }
                 },
                 update: function () {
@@ -38,14 +38,14 @@
                     	}
                     	return;
                     }
-                    console.log("localStorage, update");
+                    slippymap.debug("localStorage, update");
                     var coords = map.pos.getLonLat();
                     try {
                         localStorage.setItem(ini.prefix + "lon", coords.lon);
                         localStorage.setItem(ini.prefix + "lat", coords.lat);
                         localStorage.setItem(ini.prefix + "zoom", coords.z);
                     } catch (e) {
-                        console.log('localStorage: ' + e);
+                        slippymap.debug('localStorage: ' + e);
                     }
                     ini.lastUpdate = now;
                 }

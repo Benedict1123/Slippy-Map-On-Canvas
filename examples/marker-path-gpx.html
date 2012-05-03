@@ -49,11 +49,11 @@
 								};
 								break;
 							default:
-								console.log(feature.properties.gpxtype);
+								slippymap.debug(feature.properties.gpxtype);
 							}
 						}
-						map.setMarkers(markers);
-						map.setTracks(tracks);
+						map.markers(markers);
+						map.tracks(tracks);
 					}
 				}
 				dataRequest = new XMLHttpRequest();

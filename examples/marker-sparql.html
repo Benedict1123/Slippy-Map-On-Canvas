@@ -21,7 +21,7 @@
 					sparql();
 				}
 				function sparql(){
-					console.log("sparql");
+					slippymap.debug("sparql");
 					var dataRequest, sparql_select, sparql_query, coords, radius, limit;
 					radius = 0.01;
 					limit = 50;
@@ -60,12 +60,12 @@
 						}
 						var marker, markers = [];
 						if(query_results.error){
-							console.log("sparql error: "+query_results.error.description);
+							slippymap.debug("sparql error: "+query_results.error.description);
 						} else {
 							var geonames = query_results.results.bindings || [];
 							for(var i=0; i<geonames.length; i++){
 								var marker = {};
-								console.log(geonames[i]);
+								slippymap.debug(geonames[i]);
 								marker.src = "../images/marker.png";
 								marker.lat = parseFloat(geonames[i].lat.value);
 								marker.lon = parseFloat(geonames[i].long.value);
@@ -75,7 +75,7 @@
 								markers.push(marker);
 							}
 						}
-						map.setMarkers(markers);
+						map.markers(markers);
 					}
 				}
 				sparql();

@@ -62,10 +62,10 @@
 				a.addZoomedListeners(function(){sync(a,b)});
 				b.addZoomedListeners(function(){sync(b,a)});
 
-				a.setWidth(innerWidth/2);
-				b.setWidth(innerWidth/2);
-				a.setHeight(innerHeight);
-				b.setHeight(innerHeight);
+				a.width(innerWidth/2);
+				b.width(innerWidth/2);
+				a.height(innerHeight);
+				b.height(innerHeight);
 
 				document.querySelectorAll("#buttons .zoomin")[0].addEventListener('click', b.zoomIn, false);
 				document.querySelectorAll("#buttons .zoomout")[0].addEventListener('click', b.zoomOut, false);

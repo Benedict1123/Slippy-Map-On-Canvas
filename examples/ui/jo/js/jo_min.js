@@ -1,7 +1,7 @@
 
 joLog=function(){if(typeof console==="undefined"||typeof console.log==="undefined"||!console.log)
 return;var strings=[];for(var i=0;i<arguments.length;i++){strings.push(arguments[i]);}
-console.log(strings.join(" "));}
+slippymap.debug(strings.join(" "));}
 Function.prototype.extend=function(superclass,proto){this.prototype=new superclass();if(proto){for(var i in proto)
 this.prototype[i]=proto[i];}};if(typeof Function.prototype.bind==='undefined'){Function.prototype.bind=function(context){var self=this;function callbind(){return self.apply(context,arguments);}
 return callbind;};}

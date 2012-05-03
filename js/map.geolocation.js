@@ -4,20 +4,20 @@
             var geo = {
                 gl: {
                     getCurrentPosition: function () {
-                        console.log("no supported geolocation services found");
+                        slippymap.debug("no supported geolocation services found");
                     }
                 },
                 lastUpdate: 0,
                 init: function () {
                     try {
                         geo.gl = navigator.geolocation;
-                        console.log("found native geolocation");
+                        slippymap.debug("found native geolocation");
                     } catch (e_nogeolocation) {
-                        console.log("no geolocation or gears plugin found", e_nogears);
+                        slippymap.debug("no geolocation or gears plugin found");
                     }
                 },
                 location: function (success, error, options) {
-                    console.log("dispatch getCurrentPosition");
+                    slippymap.debug("dispatch getCurrentPosition");
                     try {
                         document.getElementById("geo").setAttribute("dispatched", true);
                     } catch (e) {}
@@ -30,7 +30,7 @@
                     });
                 },
                 watch: function (success, error, options) {
-                    console.log("dispatch watchPosition");
+                    slippymap.debug("dispatch watchPosition");
                     try {
                         document.getElementById("geo").setAttribute("dispatched", true);
                     } catch (e) {}
@@ -43,7 +43,7 @@
                     });
                 },
                 displayError: function (error) {
-                    console.log("getCurrentPosition error: " + (error.message || " - "));
+                    slippymap.debug("getCurrentPosition error: " + (error.message || " - "));
                     try {
                         document.getElementById("geo").removeAttribute("dispatched");
                         document.getElementById("geo").setAttribute("error", true);

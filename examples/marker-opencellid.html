@@ -88,7 +88,7 @@
 											html : name+"<br />"+description
 							}
 						}
-						map.setMarkers(markers);
+						map.markers(markers);
 						document.querySelectorAll("#loading .inner")[0].innerHTML = "Found: "+placemarks.length;
 						setTimeout(function(){
 							document.querySelectorAll("#loading")[0].style.display='none';

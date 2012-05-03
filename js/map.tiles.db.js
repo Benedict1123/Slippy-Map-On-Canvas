@@ -21,9 +21,9 @@
                             });
                         }
                         if (!tilesCache.sqlite) {
-                            console.log("Failed to open the database.");
+                            slippymap.debug("Failed to open the database.");
                         } else {
-                            console.log("using sqlite to store tiles.");
+                            slippymap.debug("using sqlite to store tiles.");
                             map.tileprovider = tilesCache.tileprovider;
                         }
                     }

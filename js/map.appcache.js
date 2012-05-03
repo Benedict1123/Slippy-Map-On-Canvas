@@ -1,5 +1,5 @@
 (function (window) {
-	console.log(document.querySelectorAll("html")[0].getAttribute("manifest"));
+	slippymap.debug(document.querySelectorAll("html")[0].getAttribute("manifest"));
 
 	var status = function(cache){
 		
@@ -34,7 +34,7 @@
 		if (navigator.onLine) {
 			if(appCache){
 				appCache.addEventListener('updateready', function(e) {
-					console.log("application update ready");
+					slippymap.debug("application update ready");
 					if (appCache.status == appCache.UPDATEREADY) {
 						appCache.swapCache();
 						if (confirm('A new version of this application is available. Load it?')) {
@@ -43,32 +43,32 @@
 					}
 				}, false);
 				appCache.addEventListener('checking', function() {
-					console.log("checking applicationCache available", status(appCache));
+					slippymap.debug("checking applicationCache available", status(appCache));
 				}, false);
 				appCache.addEventListener('cached', function() {
-					console.log("application cached");
+					slippymap.debug("application cached");
 				}, false);
 				appCache.addEventListener('downloading', function() {
-					console.log("downloading application");
+					slippymap.debug("downloading application");
 				}, false);
 				appCache.addEventListener('error', function(e) {
-					console.log("error downloading application",e, event);
+					slippymap.debug("error downloading application",e, event);
 				}, false);
 				appCache.addEventListener('noupdate', function() {
-					console.log("no update", status(appCache));
+					slippymap.debug("no update", status(appCache));
 				}, false);
 				appCache.addEventListener('obsolete', function() {
-					console.log("applicationCache obsolete");
+					slippymap.debug("applicationCache obsolete");
 				}, false);
 				appCache.addEventListener('progress', function(e) {
-					console.log("downloading application in progress", (e.loaded+1)+"/"+e.total);
+					slippymap.debug("downloading application in progress", (e.loaded+1)+"/"+e.total);
 				}, false);
-//				console.log("applicationCache status", status(appCache));
+//				slippymap.debug("applicationCache status", status(appCache));
 			} else {
-				console.log("no applicationCache available");
+				slippymap.debug("no applicationCache available");
 			}
 		} else {
-			console.log("navigator offline");	
+			slippymap.debug("navigator offline");	
 		}
 	}, false);
 })(window);

@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     break;
                 case 'clear':
                     stack.push(map);
-                    canvas.setMarkers();
+                    canvas.markers({});
                     canvas.refresh();
 
                     break;
@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function () {
         function addmarker(id){
         	        var pos = canvas.coords();
                     if(!id) id = (new Date()).getTime();
-                    canvas.setMarker(id, {
+                    canvas.marker(id, {
 	                        src: "../../../images/marker.png",
     	                    lon: pos.lon,
         	                lat: pos.lat,

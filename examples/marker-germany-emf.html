@@ -52,16 +52,16 @@
 					var url = 'http://emf2.bundesnetzagentur.de/DataService.asmx/GetStandorte';
 					var params = '{"boundingBox":['+lonMax+','+latMax+','+lonMin+','+latMin+']}';
 //					var params = '{"boundingBox":[52.508072051744215,13.472199440002441,52.49579374473863,13.438725471496582]}';
-console.log(params);
+slippymap.debug(params);
 					var request = new XMLHttpRequest();
 					document.querySelectorAll("#loading .inner")[0].innerHTML = "Loading...";
 					document.querySelectorAll("#loading")[0].style.display='block';					
 					request.open("POST", url, true);
 					request.onload = function(){
 						var placemarks = [];
-						console.log(request.responseText);
+						slippymap.debug(request.responseText);
 						var data = JSON.parse(request.responseText);
-						console.log(data);
+						slippymap.debug(data);
 						placemarks = data.d;
 						for(var i=0; i<placemarks.length;i++){
 							var placemark = placemarks[i];
@@ -74,7 +74,7 @@ console.log(params);
 											html : "FID: "+ placemark.f+"<br />Standortbescheinigungs-Nr. "+placemark.s
 							}
 						}
-						map.setMarkers(markers);
+						map.markers(markers);
 						document.querySelectorAll("#loading .inner")[0].innerHTML = "Found: "+placemarks.length;
 						setTimeout(function(){
 							document.querySelectorAll("#loading")[0].style.display='none';
