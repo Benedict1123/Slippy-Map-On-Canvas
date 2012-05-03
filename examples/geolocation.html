@@ -3,7 +3,8 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Slippy Map on Canvas (HTML5) | geolocation</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<link rel="apple-touch-icon-precomposed" href="../images/touch-icon.png" />
 		<link href="../css/map.css" rel="stylesheet" type="text/css" media="all" />
 		<link href="../css/ui.css" rel="stylesheet" type="text/css" media="all" />
@@ -16,7 +17,18 @@
 				document.querySelectorAll("#buttons .zoomin")[0].addEventListener('click', map.zoomIn, false);
 				document.querySelectorAll("#buttons .zoomout")[0].addEventListener('click', map.zoomOut, false);
 				document.querySelectorAll("#buttons .gps")[0].addEventListener('click', function(){
-					map.geolocation.location();
+					map.geolocation.location(
+						function(position){
+							map.geolocation.displayPosition(position);
+							document.getElementById("geo").removeAttribute("dispatched");
+							document.getElementById("geo").setAttribute("success", true);
+						},
+						function(error){
+							map.geolocation.displayError(error);
+    	                    document.getElementById("geo").removeAttribute("dispatched");
+	                        document.getElementById("geo").setAttribute("error", true);
+						}						
+					);
 				}, false);
 			}, false);
 		</script>	

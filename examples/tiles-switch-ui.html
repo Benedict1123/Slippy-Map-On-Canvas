@@ -16,8 +16,6 @@
 		<script type="text/javascript">
 			document.addEventListener('DOMContentLoaded', function(){
 				var currentTileProvider;
-				/* caches stores tiles of sources, not currently used */
-				var caches = [];
 				var init = function(){
 					currentTileProvider = -1;
 					nextTileSource();
@@ -52,16 +50,14 @@
 				}
 				
 				var nextTileSource = function(){
-					caches[currentTileProvider] = map.getTileCache();
 					currentTileProvider = (++currentTileProvider) % tileProviders.length;
-					map.setTileProvider(tileProviders[currentTileProvider].provider, caches[currentTileProvider]);
+					map.tileProvider(tileProviders[currentTileProvider].provider);
 					document.getElementById('copyright').innerHTML = tileProviders[currentTileProvider].copyright;
 				}
 
 				var switchTileSource = function(index){
-					caches[currentTileProvider] = map.getTileCache();
 					currentTileProvider = index % tileProviders.length;
-					map.setTileProvider(tileProviders[currentTileProvider].provider, caches[currentTileProvider]);
+					map.tileProvider(tileProviders[currentTileProvider].provider);
 					document.getElementById('copyright').innerHTML = tileProviders[currentTileProvider].copyright;
 				}
 
@@ -223,7 +219,26 @@
 				document.querySelectorAll("#buttons .zoomout")[0].addEventListener('click', map.zoomOut, false);
 
 				document.querySelectorAll("#buttons .gps")[0].addEventListener('click', function(){
-					map.geolocation.location();
+					map.geolocation.location(
+						function(position){
+							map.geolocation.displayPosition(position);
+							map.marker('location', {	
+								src : "../images/mylocation.png",
+								lon : position.coords.longitude,
+								lat : position.coords.latitude,
+								offsetX : -14,
+								offsetY : -14
+							});
+							
+							document.getElementById("geo").removeAttribute("dispatched");
+							document.getElementById("geo").setAttribute("success", true);
+						},
+						function(error){
+							map.geolocation.displayError(error);
+    	                    document.getElementById("geo").removeAttribute("dispatched");
+	                        document.getElementById("geo").setAttribute("error", true);
+						}						
+					);
 				}, false);
 				
 				document.querySelectorAll("#buttons .info")[0].addEventListener('click', function(){

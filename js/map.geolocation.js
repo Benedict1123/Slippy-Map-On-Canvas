@@ -44,10 +44,6 @@
                 },
                 displayError: function (error) {
                     slippymap.debug("getCurrentPosition error: " + (error.message || " - "));
-                    try {
-                        document.getElementById("geo").removeAttribute("dispatched");
-                        document.getElementById("geo").setAttribute("error", true);
-                    } catch (e) {}
                 },
                 displayPosition: function (position) {
                     var now = function () {
@@ -65,10 +61,6 @@
                         map.recenter(position.coords.longitude, position.coords.latitude);
                     }
                     geo.lastUpdate = now();
-                    try {
-                        document.getElementById("geo").removeAttribute("dispatched");
-                        document.getElementById("geo").setAttribute("success", true);
-                    } catch (e) {}
                 }
             };
             return geo;

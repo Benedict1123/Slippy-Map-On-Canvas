@@ -388,8 +388,6 @@
                                         url: map.tileprovider
                                     }
                                 };
-                            } else {
-                                tileLayers = map.tileprovider;
                             }
                             for (var t in tileLayers) {
                                 if (tileLayers.hasOwnProperty(t)) {
@@ -578,11 +576,11 @@
                     },
                     refreshCounter: 0,
                     refreshLastStart: 0,
-                    refreshFPS: 50,
+                    refreshFPS: 25,
                     refreshListeners: {},
                     /* garbage collector, purges tiles if more than 500 are loaded and tile is more than 100 refresh cycles old */
                     garbage: function () {
-                        if (map.renderer.tilecount > 200) {
+                        if (map.renderer.tilecount > 500) {
                             if (map.renderer.tiles) {
                                 var remove = [];
                                 for (var key in map.renderer.tiles) {
@@ -994,17 +992,28 @@
                     map.events.zoomOut(event, options);
                     return this;
                 },
-                getTileCache: function () {
-                    if (map.renderer.tiles.length == 1) {
-                        return map.renderer.tiles[0];
-                    } else {
-                        return map.renderer.tiles;
-                    }
+                tileCache: function (tiles) {
+                	if (typeof provider !== 'undefined') {
+                		map.renderer.tiles = tiles;
+                	} else {
+						if (map.renderer.tiles.length == 1) {
+							return map.renderer.tiles[0];
+						} else {
+							return map.renderer.tiles;
+						}                	
+                	}
+                    return this;
                 },
-                setTileProvider: function (url, cache) {
-                    map.tileprovider = url;
-                    map.renderer.tiles = cache || [];
-                    map.renderer.refresh();
+                tileProvider: function (provider) {
+                	if (typeof provider !== 'function') {
+						return map.tileprovider;;
+					} else {
+        	            map.tileprovider = provider;
+    	                delete map.renderer.tiles;
+    	                map.renderer.tiles = [];
+	                    map.renderer.refresh();					
+					}
+                    return this;
                 },
                 markers: function (markers) {
                 	if (typeof markers !== 'object') {

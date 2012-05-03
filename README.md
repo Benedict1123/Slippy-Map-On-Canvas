@@ -144,6 +144,19 @@ Public Functions
 *   addMovedListeners(listener)
 *   addMoveEndListeners(listener)
 *   addZoomedListeners(listener)
-*   getTileCache()
-*   setTileProvider(url, cache)
+*   tileProvider(provider) - parameter function optional
+
+		get: map.tileProvider();
+		set: map.tileProvider(
+				function (x, y, z) {
+					var rand = function (n) {
+						return Math.floor(Math.random() * n);
+					};
+					var sub = ["a", "b", "c"];
+					var url = "http://" + sub[rand(3)] + ".tile.openstreetmap.org/" + z + "/" + x + "/" + y + ".png";
+					return url;
+				}
+			);
+
+
 *   refresh()
