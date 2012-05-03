@@ -40,7 +40,7 @@
 		<script type="text/javascript">
 			document.addEventListener('DOMContentLoaded', function(){
 
-				var map =  slippymap("map", true, 15, 13.4033, 52.5462).init();
+				var map =  slippymap({zoom: 15, lon: 13.4033, lat: 52.5462}).init();
 
 				showCellTowers = function(){
 					var markers = {}

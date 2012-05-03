@@ -10,8 +10,8 @@
 		<script type="text/javascript">
 			document.addEventListener('DOMContentLoaded', function(){
 				var a, b;
-				a =  slippymap("map_a", false, 0, 0, 0).init();
-				b =  slippymap("map_b", false, 0, 0, 0).init();
+				a =  slippymap({div: "map_a", fullscreen: false}).init();
+				b =  slippymap({div: "map_b", fullscreen: false}).init();
 
 				a.setWidth(innerWidth/2);
 				b.setWidth(innerWidth/2);

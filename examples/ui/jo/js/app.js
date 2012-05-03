@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
             htmlgroup = new joHTML(document.getElementById('templateMap').innerHTML)]);
 
             map.activate = function () {
-                canvas =  slippymap("map", true, state.z, state.lon, state.lat, markers).init();
+                canvas =  slippymap({zoom: state.z, lon: state.lon, lat: state.lat, markers: markers}).init();
 
                 document.getElementById("geo").removeAttribute("dispatched");
                 document.getElementById("geo").removeAttribute("error");

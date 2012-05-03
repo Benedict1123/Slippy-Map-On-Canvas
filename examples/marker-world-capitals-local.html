@@ -252,7 +252,7 @@
 				markers.push({"lat":59.91325,"name":"Oslo","src":marker_src,"lon":10.73892,"offsetX":-11,"offsetY":-25});
 				markers.push({"lat":49.45981,"name":"Saint Peter Port","src":marker_src,"lon":-2.53527,"offsetX":-11,"offsetY":-25});
 				
-				var map =  slippymap("map", true, 0, 0, 0, markers).init();
+				var map =  slippymap({markers: markers}).init();
 								
 				document.querySelectorAll("#buttons .zoomin")[0].addEventListener('click', map.zoomIn, false);
 				document.querySelectorAll("#buttons .zoomout")[0].addEventListener('click', map.zoomOut, false);

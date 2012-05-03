@@ -43,11 +43,11 @@
 		<script type="text/javascript">
 			document.addEventListener('DOMContentLoaded', function(){
 				var a, b, syncLock;
-				a =  slippymap("map_a", false, 15, 13.4, 52.5).init();
-				b =  slippymap("map_b", false, 15, 13.4, 52.5, {}, {},
-						function(x,y,z){
+				a =  slippymap({ div:"map_a", fullscreen: false, zoom: 15, lon: 13.4, lat: 52.5}).init();
+				b =  slippymap({ div:"map_b", fullscreen: false, zoom: 15, lon: 13.4, lat: 52.5,
+						tileprovider: function(x,y,z){
 							return "http://mt1.google.com/vt/x="+x+"&y="+y+"&z="+z;
-						}).init();
+						}}).init();
 
 				var sync = function(source, target){
 					// prevent notifier loop // race condition

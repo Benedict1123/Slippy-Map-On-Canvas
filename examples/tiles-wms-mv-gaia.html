@@ -33,7 +33,7 @@
 					url += "&height=256";
 					return url;
 				}
-				var map = slippymap("map", true, 13, 13.05, 53.34, {}, {}, tileprovider).init();
+				var map = slippymap({ zoom: 13, lon: 13.05, lat: 53.34, tileprovider: tileprovider}).init();
 				document.querySelectorAll("#buttons .zoomin")[0].addEventListener('click', map.zoomIn, false);
 				document.querySelectorAll("#buttons .zoomout")[0].addEventListener('click', map.zoomOut, false);
 			}, false);		

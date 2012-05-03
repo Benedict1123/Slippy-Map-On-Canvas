@@ -16,7 +16,7 @@
 				var hideInfo = function(){
 					document.getElementById("info").style.display = "none";
 				}
-				var map =  slippymap("map", true, 7, -2.1, 53.3);
+				var map =  slippymap({zoom: 7, lon: -2.1, lat: 53.3});
                 map.setPanBounds(-11.9, 59.5, 2.9, 49.6);
                 map.init();
 				document.querySelectorAll("#buttons .zoomin")[0].addEventListener('click', map.zoomIn, false);

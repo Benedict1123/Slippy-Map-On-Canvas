@@ -11,7 +11,7 @@
 		<script type="text/javascript">
 			document.addEventListener('DOMContentLoaded', function () {
 				var dataRequest;
-				var map = slippymap("map", true, 16, -0.728800, 51.370710).init();
+				var map = slippymap({zoom: 16, lon: -0.728800, lat: 51.370710}).init();
 				var url = "http://gpx2geojson.appspot.com/?gpxurl=http://wtp2.appspot.com/SwinleyForest.gpx&mime=text/plain";
 				var convert = function () {
 					if (this.readyState == 4 && this.status == 200) {

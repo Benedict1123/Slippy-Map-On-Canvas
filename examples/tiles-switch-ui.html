@@ -88,6 +88,7 @@
 					url += "&height="+(size || 256);
 					url += "&format_options=antialiasing:on";
 					url += "&tiled=yes";
+//					url += "&antialias=on";
 					
 				
 					return url;
@@ -211,13 +212,13 @@
 											copyright : "Data by LGB",
 											bbox: [11.2,51.3,14.8,53.5],
 											provider : function(x,y,z){
-												return wms_request("http://isk.geobasis-bb.de/ows/dtk50.php","0", x, y, z);
+												return wms_request("http://isk.geobasis-bb.de/ows/dtk50.php","tk50,ntk50", x, y, z);
 											}
 										}
 
 
 				];
-				var map =  slippymap("map", true, 12, 13.31, 53.21, {}, {}, tileProviders[0].provider).init();
+				var map =  slippymap({zoom:12, lon:13.31, lat:53.21, tileprovider: tileProviders[0].provider}).init();
 				document.querySelectorAll("#buttons .zoomin")[0].addEventListener('click', map.zoomIn, false);
 				document.querySelectorAll("#buttons .zoomout")[0].addEventListener('click', map.zoomOut, false);
 
