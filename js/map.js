@@ -1058,7 +1058,7 @@
         };
         slippymap.debug = function(params){
        		if(typeof console !== "undefined") {
-       			alert(params);
+       			console.log(params);
        		}
        	};
         slippymap.extension = {};

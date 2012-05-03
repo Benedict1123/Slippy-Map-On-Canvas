@@ -30,40 +30,41 @@ Quickstart
 Public Functions
 ----------
 
-*   init(callback)
+*   function)
 
-	callback is a function called before plugins are initialized
+	function is optional. called before plugins are initialized.
+	has access to entire slippymap object/ internal api.
 
 		var map =  slippymap().init();
 
-*   center({x, y, z}) - unit pixel
+*   center({x, y, z}) - parameter object optional - unit pixel
 
 		get: map.center();
 		set: map.center({x: 1, y: 2, z: 3});
 	
-*   coords({lon, lat, zoom})
+*   coords({lon, lat, zoom}) - parameter object optional
 
 		get: map.coords();
 		set: map.center({lon: 1, lat: 2, zoom: 3});
 
-*   zoom(z)
+*   zoom(z) - parameter number optional
 
 		get: map.zoom();
 		set: map.zoom(18);
 
-*   zoomIn()
-*   zoomOut()
-*   width(width)
+*   zoomIn() - no parameters
+*   zoomOut() - no parameters
+*   width(width) - parameter number optional
 
 		get: map.width();
 		set: map.width(1024);
 
-*   height(height)
+*   height(height) - parameter number optional
 
 		get: map.height();
 		set: map.height(800);
 
-*   markers(markers)
+*   markers(markers) - parameter object optional
 
 		get: map.markers();
 		set: map.markers({	
@@ -90,7 +91,7 @@ Public Functions
 						}
 				});
 
-*   marker(id, marker)
+*   marker(id, marker) - parameters number, object optional
 
 		get: map.marker('Berlin');
 		set: map.marker('Berlin',{	
@@ -101,7 +102,7 @@ Public Functions
 							offsetY : -25
 						});
 
-*   tracks(tracks)
+*   tracks(tracks) - parameter object optional
 
 		get: map.tracks();
 		set: map.tracks({
@@ -115,27 +116,27 @@ Public Functions
 
 *   setPanBounds(left, top, right, bottom)
 *   getVisibleBounds()
-*   maxZ(zoom)
+*   maxZ(zoom)- parameter number optional
 
 		get: map.maxZ();
 		set: map.maxZ(10);
 
-*   minZ(zoom)
+*   minZ(zoom) - parameter number optional
 
 		get: map.minZ();
 		set: map.minZ(10);
 
-*   tileSize(size)
+*   tileSize(size) - parameter number optional
 
 		get: map.tileSize();
 		set: map.tileSize(512);
 
-*   fractionalZoom(true/false)
+*   fractionalZoom(true/false) - parameter boolean optional
 
 		get: map.fractionalZoom();
 		set: map.fractionalZoom(false);
 
-*   scrollMomentum(true/false)
+*   scrollMomentum(true/false) - parameter boolean optional
 
 		get: map.scrollMomentum();
 		set: map.scrollMomentum(false);
@@ -146,8 +147,3 @@ Public Functions
 *   getTileCache()
 *   setTileProvider(url, cache)
 *   refresh()
-
-Plugins
-----------
-
-Plugin have access to the entire object.
