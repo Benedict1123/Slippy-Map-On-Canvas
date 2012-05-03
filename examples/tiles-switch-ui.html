@@ -185,6 +185,30 @@
 											}
 										},
 										{
+											id: "bing",
+											title: "Bing (Map)",
+											copyright : "Data by Bing",
+											provider : function(x,y,z){
+												//http://msdn.microsoft.com/en-us/library/bb259689.aspx
+												var key = [];
+												for (var i = z; i > 0; i--)
+												{
+													var digit = 0;
+													var mask = 1 << (i - 1);
+													if ((x & mask) != 0)
+													{
+														digit++;
+													}
+													if ((y & mask) != 0)
+													{
+														digit++;
+														digit++;
+													}
+													key.push(digit);
+												}
+												return "http://ecn.dynamic.t3.tiles.virtualearth.net/comp/CompositionHandler/"+key.join("")+"?mkt=de-de&it=G,VE,BX,L,LA&shading=hill&n=z";
+											}
+										},										{
 											id: "mv",
 											title: "GDI Mecklenburg-V.",
 											copyright : "Data by Gaia MV",
@@ -267,6 +291,9 @@
 						document.getElementById("search").style.display = "none";
 						lookup();
 					}, false);
+					document.querySelectorAll("#search .close")[0].addEventListener('click', function(){
+						document.getElementById("search").style.display = "none";
+					}, false);
 				}, false);
 
 				document.querySelectorAll("#buttons .sources")[0].addEventListener('click', function(){
@@ -283,7 +310,7 @@
 
 		</script>
 	</head>
-	<body>
+	<body">
 		<canvas id="map">
 			Your  browser doesn't support canvas elements.			
 		</canvas>

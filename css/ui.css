@@ -153,7 +153,8 @@ body {
 	right:10px;
 	top:10px;
 	-webkit-border-radius: 20px;
-	overflow-y: auto;
+			overflow-y: auto;
+			max-height: 100%;
 }
 
 .panel h1, .panel p {
