@@ -16,7 +16,7 @@
 				var hideInfo = function(){
 					document.getElementById("info").style.display = "none";
 				}
-				var map =  slippymap("map", true, 0, 0, 0).init();
+				var map =  slippymap().init();
 				document.querySelectorAll("#buttons .zoomin")[0].addEventListener('click', map.zoomIn, false);
 				document.querySelectorAll("#buttons .zoomout")[0].addEventListener('click', map.zoomOut, false);
 				document.querySelectorAll("#buttons .info")[0].addEventListener('click', showInfo, false);
@@ -33,7 +33,7 @@
 			<li><a class="zoomout">-</a></li>
 			<li><a class="info">i</a></li>
 		</ul>
-		<div id="info">
+		<div id="info" class="panel">
 			<h1>Slippy Map on Canvas</h1>
 			<p>
 				2010, dFacts Network
