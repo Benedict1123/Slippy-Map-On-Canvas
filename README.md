@@ -30,7 +30,7 @@ Quickstart
 Public Functions
 ----------
 
-*   function)
+*   init(function)
 
 	function is optional. called before plugins are initialized.
 	has access to entire slippymap object/ internal api.
@@ -42,7 +42,7 @@ Public Functions
 		get: map.center();
 		set: map.center({x: 1, y: 2, z: 3});
 	
-*   coords({lon, lat, zoom}) - parameter object optional
+*   coords({lon, lat, zoom}) - parameter object optional - unit deg
 
 		get: map.coords();
 		set: map.center({lon: 1, lat: 2, zoom: 3});
