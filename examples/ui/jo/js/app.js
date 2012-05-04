@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
             htmlgroup = new joHTML(document.getElementById('templateMap').innerHTML)]);
 
             map.activate = function () {
-                canvas =  slippymap({zoom: state.z, lon: state.lon, lat: state.lat, markers: markers}).init();
+                canvas =  canvas || slippymap({zoom: state.z, lon: state.lon, lat: state.lat, markers: markers}).init();
 
                 document.getElementById("geo").removeAttribute("dispatched");
                 document.getElementById("geo").removeAttribute("error");
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
 				});
 				document.querySelectorAll("#buttons .settings")[0].addEventListener('click', function(){
 	            	state = canvas.coords();
-	            	markers = canvas.getMarkers();
+	            	markers = canvas.markers();
 					UI.show(menu);
 				});
                 
@@ -79,21 +79,21 @@ document.addEventListener('DOMContentLoaded', function () {
             menulist.selectEvent.subscribe(function (id) {
                 switch (id) {
                 case 'geolocate':
-                    stack.push(map);
+                    stack.pop();
                    	canvas.geolocation.location();
                     break;
                 case 'watchposition':
-                    stack.push(map);
+                    stack.pop();
                     canvas.geolocation.watch(false, geoerror, {
                         enableHighAccuracy: true
                     });
                     break;
                 case 'mark':
-                    stack.push(map);
+                    stack.pop();
 					addmarker();
                     break;
                 case 'clear':
-                    stack.push(map);
+                    stack.pop();
                     canvas.markers({});
                     canvas.refresh();
 
@@ -148,8 +148,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     break;
                 }
-                stack.push(map);
-                canvas.setTileProvider(tileprovider);
+                stack.pop();
+                canvas.tileProvider(tileprovider);
             }, this);
 
 
@@ -220,7 +220,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         cancelfound.selectEvent.subscribe(back, this);
 
                         foundmenulist.selectEvent.subscribe(function (id) {
-                            stack.push(map);
+                            stack.pop();
+                            stack.pop();
+                            stack.pop();
                             canvas.coords({lat:parseFloat(id[0]), lon:parseFloat(id[1]), zoom:parseFloat(id[2])});
 							addmarker(id[3]);
                         });
@@ -279,22 +281,19 @@ document.addEventListener('DOMContentLoaded', function () {
             new joTitle("Geolocation Error"), new joGroup([
             new joHTML("<h3>Error</h3><p>" + error.message + "</p>"), ]), new joFooter([
             new joDivider(), cancelgeoerror = new joButton("Back")])]);
-            cancelgeoerror.selectEvent.subscribe(home, this);
+            cancelgeoerror.selectEvent.subscribe(back, this);
             stack.push(geoerror);
         }
 
 
         function geolocate() {
-            canvas.geolocation.location(geosuccess, geoerror, {
-                enableHighAccuracy: true
-            });
-            document.getElementById("geo").setAttribute("dispatched", true);
+            canvas.geolocation.location(geosuccess, geoerror);
         }
 
         function back() {
             stack.pop();
-        }
-
+		}
+		
         function home() {
             stack.push(map);
         }
