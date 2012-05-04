@@ -243,6 +243,7 @@
 				document.querySelectorAll("#buttons .zoomout")[0].addEventListener('click', map.zoomOut, false);
 
 				document.querySelectorAll("#buttons .gps")[0].addEventListener('click', function(){
+					document.getElementById("geo").setAttribute("dispatched", true);
 					map.geolocation.location(
 						function(position){
 							map.geolocation.displayPosition(position);

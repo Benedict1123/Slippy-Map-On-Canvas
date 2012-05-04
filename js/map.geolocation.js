@@ -18,9 +18,6 @@
                 },
                 location: function (success, error, options) {
                     slippymap.debug("dispatch getCurrentPosition");
-                    try {
-                        document.getElementById("geo").setAttribute("dispatched", true);
-                    } catch (e) {}
                     geo.gl.getCurrentPosition(
                     success || geo.displayPosition, error || geo.displayError, options || {
                         maximumAge: 600,
@@ -31,9 +28,6 @@
                 },
                 watch: function (success, error, options) {
                     slippymap.debug("dispatch watchPosition");
-                    try {
-                        document.getElementById("geo").setAttribute("dispatched", true);
-                    } catch (e) {}
                     geo.gl.watchPosition(
                     success || geo.displayPosition, error || geo.displayError, options || {
                         maximumAge: 600000,
