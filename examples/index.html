@@ -3,8 +3,82 @@
 	  <meta name="viewport" content="width=device-width, initial-scale=1" />
 	  <title>slippy map on canvas (html5) | exampless</title>
 	  <style type="text/css">
+			html {
+				width: 100%;
+				text-align: center;
+			}
+			body {
+				background: #fff;
+				font: small/1.4 arial, helvetice, sans-serif;
+				padding:10px;
+				margin:0 auto;
+				text-align: left;
+				max-width: 480px;
+				min-width: 300px;
+			}
+			h1, h2 {
+				font-size: 2em;
+				text-align: left;
+				margin: 0;
+			}
+			h2 {
+				font-size: 1.2em;
+				margin: 0.5em 0;
+			}
+			ul, li, ul li {
+				margin:0;
+				padding:0;
+				list-style: none;
+				list-style-position: none;
+			}
 			ul {
-					margin: 0 0 1em;
+				margin: 0 0 1em;
+			}					
+			ul ul{
+				-webkit-border-bottom-left-radius: 5px;
+				-webkit-border-bottom-right-radius: 5px;
+				-webkit-border-top-right-radius: 5px;
+				border: solid 1px #aaa;
+			}
+			ul li span {
+				width: auto;
+				display: inline-block;
+				padding: 5px 10px;
+				color: #000;
+				background: #add8e6;
+				-webkit-border-top-left-radius: 5px;
+				-webkit-border-top-right-radius: 5px;
+				border: solid 1px #aaa;
+				border-bottom: none;
+				font-weight: bold;
+			}
+			ul ul li a {
+				width: auto;
+				display: block;
+				border-bottom: solid 1px #aaa;
+				padding: 5px 10px;
+				color: #000;
+				background: #ddd;
+				text-decoration: none;
+			}
+			ul ul li a:hover {
+				background: #f83835;
+				color: #fff;
+			}
+			ul ul li:first-child a {
+				-webkit-border-top-right-radius: 5px;
+			}
+			ul ul li:last-child a {
+				border: none;
+				-webkit-border-bottom-left-radius: 5px;
+				-webkit-border-bottom-right-radius: 5px;
+			}
+			ul ul li:nth-child(odd) a {
+				background: #eee;			
+			}
+			ul ul li:nth-child(odd) a:hover {
+				background: #f83835;			
+				color: #fff;
 			}
 	  </style>
 	</head>
@@ -12,14 +86,14 @@
 	  <h1>slippy map on canvas (html5)</h1>
 	  <h2>examples</h2>
 	  <ul>
-		<li>basics
+		<li><span>basics</span>
 		  <ul>
 			<li><a href="geolocation.html">geolocation</a></li>
 			<li><a href="marker.html">markers</a></li>
 			<li><a href="local-storage.html">store current coords in local storage</a></li>
 		  </ul>
 		</li>
-		<li>tile sources
+		<li><span>tile sources</span>
 		  <ul>
 			<li><a href="tiles-google-map.html">google street map</a></li>
 			<li><a href="tiles-google-sat.html">google satellite tiles</a></li>
@@ -31,7 +105,7 @@
 			<li><a href="tiles-wms.html">wms getmap - globe.gov</a></li>
 		  </ul>
 		</li>
-		<li>markers + layers
+		<li><span>markers + layers</span>
 		  <ul>
 			<li><a href="marker-world-capitals-local.html">world capitals | geonames.org |
 			local</a></li>
@@ -43,19 +117,19 @@
 			<li><a href="marker-feature-info.html">simple marker info bubble</a></li>
 		  </ul>
 		</li>
-		<li>layers
+		<li><span>layers</span>
 		  <ul>
 			<li><a href="tiles-osm-hill.html">two tile layers</a></li>
 		  </ul>
 		</li>
-		<li>path
+		<li><span>path</span>
 		  <ul>
 			<li><a href="marker-path-gpx.html">gpx2geojson</a></li>
 			<li><a href="marker-path.html">path</a></li>
 			<li><a href="marker-sparql.html">sparql</a></li>
 		  </ul>
 		</li>
-		<li>misc
+		<li><span>misc</span>
 		  <ul>
 			<li><a href="two-seperate-maps.html">two seperate maps</a></li>
 			<li><a href="two-sychronized-maps.html">two sychronized maps</a></li>
@@ -65,7 +139,7 @@
 			<li><a href="fractional-zoom.html">fractional zoom</a></li>
 		  </ul>
 		</li>
-		<li>ui
+		<li><span>ui</span>
 		  <ul>
 			<li><a href="tiles-switch-ui.html">different tile sources with preview
 			ui</a></li>
