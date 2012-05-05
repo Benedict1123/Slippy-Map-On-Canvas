@@ -135,6 +135,7 @@
                     for (var i = 0; i < map.moveEndListeners.length; i++) {
                         map.moveEndListeners[i](options);
                     }
+                    map.renderer.garbage();
                 },
                 moveEndListeners: [],
                 resized: function () {
@@ -570,13 +571,10 @@
                         for (var i = 0; i < map.renderer.refreshListeners.length; i++) {
                             map.renderer.refreshListeners[i]();
                         }
-                        if (refreshId % 10 === 0) {
-                            map.renderer.garbage();
-                        }
                     },
                     refreshCounter: 0,
                     refreshLastStart: 0,
-                    refreshFPS: 25,
+                    refreshFPS: 30,
                     refreshListeners: {},
                     /* garbage collector, purges tiles if more than 500 are loaded and tile is more than 100 refresh cycles old */
                     garbage: function () {
