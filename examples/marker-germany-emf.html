@@ -45,7 +45,7 @@
 
 				showCellTowers = function(){
 					var markers = {}
-					var bbox = map.getVisibleBounds();
+					var bbox = map.bounds();
 					var latMin = bbox['left'];
 					var lonMin = bbox['bottom'];
 					var latMax = bbox['right'];

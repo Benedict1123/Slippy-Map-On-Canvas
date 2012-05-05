@@ -22,12 +22,6 @@
 								var url = "http://" + sub[rand(3)] + ".tile.openstreetmap.org/" + z + "/" + x + "/" + y + ".png";
 								return url;
 						}
-					},
-					'hill' : {
-						alpha : 1,
-						url :	function(x,y,z){
-									return "http://www.wanderreitkarte.de/hills/" + z + "/" + x + "/" + y + ".png";
-						}
 					}
 				}
 				var map =  slippymap({ zoom: 12, lon: 11.1, lat: 47.4, tileprovider: layers}).init();

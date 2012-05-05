@@ -39,7 +39,7 @@
                     	return;
                     }
                     slippymap.debug("localStorage, update");
-                    var coords = map.pos.getLonLat();
+                    var coords = map.pos.coords();
                     try {
                         localStorage.setItem(ini.prefix + "lon", coords.lon);
                         localStorage.setItem(ini.prefix + "lat", coords.lat);
