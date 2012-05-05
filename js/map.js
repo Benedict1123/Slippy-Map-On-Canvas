@@ -10,41 +10,46 @@
     "use strict";
     if (typeof window.slippymap === 'undefined') {
         var slippymap = function (options) {
-            var $ = window;
-            var defaults = {
-                    div: "map",
-                    fullscreen : true,
-                    zoom: 1,
-                    lon: 0,
-                    lat: 0,
-                    markers: {},
-                    tracks: {},
-                    tileprovider: function (x, y, z) {
-                        var rand = function (n) {
-                            return $.Math.floor($.Math.random() * n);
-                        };
-                        var sub = ["a", "b", "c"];
-                        var url = "http://" + sub[rand(3)] + ".tile.openstreetmap.org/" + z + "/" + x + "/" + y + ".png";
-                        return url;
-                    },
-                    useFractionalZoom: true,
-                    scrollMomentum: true
+            var $, map, defaults, property;
+            $ = window;
+            defaults = {
+                div: "map",
+                fullscreen : true,
+                zoom: 1,
+                lon: 0,
+                lat: 0,
+                markers: {},
+                tracks: {},
+                tileprovider: function (x, y, z) {
+                    var rand, sub, url;
+                    rand = function (n) {
+                        return $.Math.floor($.Math.random() * n);
+                    };
+                    sub = ["a", "b", "c"];
+                    url = "http://" + sub[rand(3)] + ".tile.openstreetmap.org/" + z + "/" + x + "/" + y + ".png";
+                    return url;
+                },
+                useFractionalZoom: true,
+                scrollMomentum: true
             };
-            if(typeof options === "object"){
-                for (var property in defaults){
-                    if(typeof options[property] !== "undefined"){
-                        defaults[property] = options[property];
+            if (typeof options === "object") {
+                for (property in defaults) {
+                    if (defaults.hasOwnProperty(property)) {
+                        if (typeof options[property] !== "undefined") {
+                            defaults[property] = options[property];
+                        }
                     }
                 }
             }
             options = defaults;
-            var map = {
-               init: function () {
+            map = {
+                init: function () {
+                    var viewportWidth, viewportHeight;
                     if ($.document.getElementById(options.div)) {
-                        var viewportWidth = $.innerWidth,
-                            viewportHeight = $.innerHeight;
+                        viewportWidth = $.innerWidth;
+                        viewportHeight = $.innerHeight;
                         map.renderer.canvas = $.document.getElementById(options.div);
-                          if (options.fullscreen === true) {
+                        if (options.fullscreen === true) {
                             map.renderer.canvas.width = viewportWidth;
                             map.renderer.canvas.height = viewportHeight;
                         }
@@ -58,7 +63,7 @@
                         map.renderer.refresh();
                         map.events.init();
                     } else {
-                        //$.slippymap.debug("canvas not found");
+                        $.slippymap.debug("canvas not found");
                     }
                 },
                 markers: options.markers,
@@ -67,9 +72,10 @@
                 useFractionalZoom: options.useFractionalZoom,
                 scrollMomentum: options.scrollMomentum,
                 zoomIn: function (options) {
+                    var step, round;
                     options = options || {};
-                    var step = options.step || 1;
-                    var round = options.round || false;
+                    step = options.step || 1;
+                    round = options.round || false;
                     step = step || 1;
                     if (!map.useFractionalZoom) {
                         step = Math.round(step);
@@ -89,9 +95,10 @@
                     }
                 },
                 zoomOut: function (options) {
+                    var step, round;
                     options = options || {};
-                    var step = options.step || 1;
-                    var round = options.round || false;
+                    step = options.step || 1;
+                    round = options.round || false;
                     step = step || 1;
                     if (!map.useFractionalZoom) {
                         step = Math.round(step);
@@ -120,19 +127,22 @@
                 },
                 /* keep track of zoom + pans */
                 zoomed: function (options) {
-                    for (var i = 0; i < map.zoomedListeners.length; i++) {
+                    var i;
+                    for (i = 0; i < map.zoomedListeners.length; i = i + 1) {
                         map.zoomedListeners[i](options);
                     }
                 },
                 zoomedListeners: [],
                 moved: function (options) {
-                    for (var i = 0; i < map.movedListeners.length; i++) {
+                    var i;
+                    for (i = 0; i < map.movedListeners.length; i = i + 1) {
                         map.movedListeners[i](options);
                     }
                 },
                 movedListeners: [],
                 moveEnded: function (options) {
-                    for (var i = 0; i < map.moveEndListeners.length; i++) {
+                    var i;
+                    for (i = 0; i < map.moveEndListeners.length; i = i + 1) {
                         map.moveEndListeners[i](options);
                     }
                     map.renderer.garbage();
@@ -155,32 +165,43 @@
                     lastTouchEventBeforeLast: {},
                     zoomIn: function (event, options) {
                         map.zoomIn(options);
+                        if (event.preventDefault) {
+                            event.preventDefault();
+                        }
                     },
                     zoomOut: function (event, options) {
                         map.zoomOut(options);
+                        if (event.preventDefault) {
+                            event.preventDefault();
+                        }
                     },
                     mouseDown: function (event) {
+                        var x, y;
                         if (!event) {
                             event = $.event;
                         }
-                        var x = event.clientX - map.renderer.canvas.offsetLeft;
-                        var y = event.clientY - map.renderer.canvas.offsetTop;
+                        x = event.clientX - map.renderer.canvas.offsetLeft;
+                        y = event.clientY - map.renderer.canvas.offsetTop;
                         if (event.button === 0) {
                             map.events.dragging = true;
                         }
                         map.events.lastMouseX = x;
                         map.events.lastMouseY = y;
+                        if (event.preventDefault) {
+                            event.preventDefault();
+                        }
                     },
                     mouseMove: function (event) {
+                        var x, y, dX, dY;
                         if (!event) {
                             event = $.event;
                         }
-                        var x = event.clientX - map.renderer.canvas.offsetLeft;
-                        var y = event.clientY - map.renderer.canvas.offsetTop;
+                        x = event.clientX - map.renderer.canvas.offsetLeft;
+                        y = event.clientY - map.renderer.canvas.offsetTop;
                         if (map.events.dragging === true) {
-                            var dX = x - map.events.lastMouseX;
-                            var dY = y - map.events.lastMouseY;
-                            if(map.scrollMomentum){
+                            dX = x - map.events.lastMouseX;
+                            dY = y - map.events.lastMouseY;
+                            if (map.scrollMomentum) {
                                 map.events.momentumX = dX;
                                 map.events.momentumY = dY;
                             }
@@ -189,15 +210,18 @@
                         }
                         map.events.lastMouseX = x;
                         map.events.lastMouseY = y;
+                        if (event.preventDefault) {
+                            event.preventDefault();
+                        }
                     },
                     mouseUp: function () {
-                        if(map.events.dragging && map.scrollMomentum && (map.events.momentumX !== 0 || map.events.momentumY !== 0)){
+                        if (map.events.dragging && map.scrollMomentum && (map.events.momentumX !== 0 || map.events.momentumY !== 0)) {
                             map.events.dragging = false;
                             map.pos.move(-map.events.momentumX * map.pow(2, map.renderer.maxZ - map.pos.getZoom()), -map.events.momentumY * map.pow(2, map.renderer.maxZ - map.pos.getZoom()), {animated: true});
                         } else {
                             map.events.dragging = false;
                             map.moveEnded();
-                        }                                           
+                        }
                     },
                     mouseOut: function () {
                         map.events.dragging = false;
@@ -213,8 +237,7 @@
                             if ($.opera) {
                                 delta = -delta;
                             }
-                        }
-                        else if (event.detail) {
+                        } else if (event.detail) {
                             delta = -event.detail / 3;
                         }
                         if (delta > 0) {
@@ -228,15 +251,19 @@
                                 mouseWheel: true
                             });
                         }
+                        if (event.preventDefault) {
+                            event.preventDefault();
+                        }
                     },
                     doubleClick: function (event) {
+                        var x, y, dX, dY;
                         if (!event) {
                             event = $.event;
                         }
-                        var x = event.clientX - map.renderer.canvas.offsetLeft;
-                        var y = event.clientY - map.renderer.canvas.offsetTop;
-                        var dX = (x - map.renderer.canvas.width / 2) / 2;
-                        var dY = (y - map.renderer.canvas.height / 2) / 2;
+                        x = event.clientX - map.renderer.canvas.offsetLeft;
+                        y = event.clientY - map.renderer.canvas.offsetTop;
+                        dX = (x - map.renderer.canvas.width / 2) / 2;
+                        dY = (y - map.renderer.canvas.height / 2) / 2;
                         map.pos.move(dX * map.pow(2, map.renderer.maxZ - map.pos.getZoom()), dY * map.pow(2, map.renderer.maxZ - map.pos.getZoom()), {
                             animated: true
                         });
@@ -247,19 +274,22 @@
                             round: true,
                             animated: true
                         });
+                        if (event.preventDefault) {
+                            event.preventDefault();
+                        }
                     },
                     /* maps touch events to mouse events */
                     touchHandler: function (event) {
-                        var now = function () {
+                        var now, touches, type, first, simulatedEvent;
+                        now = function () {
                             return (new $.Date()).getTime();
                         };
-                        var touches;
                         if (event.type !== 'touchend') {
                             touches = event.targetTouches;
                         } else {
                             touches = event.changedTouches;
                         }
-                        var type, first = touches[0];
+                        first = touches[0];
                         if (touches.length === 1) {
                             switch (event.type) {
                             case 'touchstart':
@@ -275,13 +305,13 @@
                             default:
                                 return;
                             }
-                            if (map.events.lastTouchEventBeforeLast && event.type == 'touchend' && map.events.lastTouchEvent.type === 'touchstart' && map.events.lastTouchEventBeforeLast.type == 'touchend' && event.x == map.events.lastTouchEventBeforeLast.x && event.y == map.events.lastTouchEventBeforeLast.y && now() - map.events.lastTouchEventBeforeLast.timeStamp < 500) {
+                            if (map.events.lastTouchEventBeforeLast && event.type === 'touchend' && map.events.lastTouchEvent.type === 'touchstart' && map.events.lastTouchEventBeforeLast.type === 'touchend' && event.x === map.events.lastTouchEventBeforeLast.x && event.y === map.events.lastTouchEventBeforeLast.y && now() - map.events.lastTouchEventBeforeLast.timeStamp < 500) {
                                 map.events.lastTouchEventBeforeLast = false;
                                 map.events.lastTouchEvent.timeStamp = now();
                                 type = 'dblclick';
                             }
-                            var simulatedEvent = $.document.createEvent('MouseEvent');
-                            simulatedEvent.initMouseEvent(type, true, true, $, 1, first.screenX, first.screenY, first.clientX, first.clientY, false, false, false, false, 0 /*left*/ , null);
+                            simulatedEvent = $.document.createEvent('MouseEvent');
+                            simulatedEvent.initMouseEvent(type, true, true, $, 1, first.screenX, first.screenY, first.clientX, first.clientY, false, false, false, false, 0, null);
                             first.target.dispatchEvent(simulatedEvent);
                             map.events.lastTouchEventBeforeLast = map.events.lastTouchEvent;
                             map.events.lastTouchEvent = event;
@@ -347,115 +377,132 @@
                     },
                     sortLayers: function () {
                         function sortZIndex(a, b) {
-                            var x = a.zindex;
-                            var y = b.zindex;
+                            var x, y;
+                            x = a.zindex;
+                            y = b.zindex;
                             return ((x < y) ? -1 : ((x > y) ? 1 : 0));
                         }
                         map.renderer.layers.sort(sortZIndex);
                     },
-                    layers: [{ /* repaint canvas, load missing images */
-                        id: 'tiles',
-                        zindex: 0,
-                        update: function () {
-                            return true;
-                        },
-                        visible: true,
-                        alpha: 1,
-                        callback: function (id, zi, zf, zp, sz, xMin, xMax, yMin, yMax, tilesize, offsetX, offsetY, alpha) {
-                            map.renderer.context.globalAlpha = alpha;
-                            map.renderer.context.fillStyle = "#000000";
-                            map.renderer.context.fillRect(0, 0, map.renderer.canvas.width, map.renderer.canvas.height);
-                        }
-                    },
-                    { /* repaint canvas, load missing images */
-                        id: 'tiles',
-                        zindex: 1,
-                        update: function () {
-                            return true;
-                        },
-                        visible: true,
-                        alpha: 1,
-                        callback: function (id, zi, zf, zp, sz, xMin, xMax, yMin, yMax, tilesize, offsetX, offsetY, alpha) {
-                            var tileprovider, tileLayers;
-                            var maxTileNumber = map.pow(2, zi) - 1;
-                            var tileDone = [];
-                            var preload = 0;
-                            var encodeIndex = function (x, y, z) {
-                                return x + "," + y + "," + z;
-                            };
-                            if (typeof map.tileprovider === 'function') {
-                                tileLayers = {
-                                    base: {
-                                        url: map.tileprovider
-                                    }
-                                };
+                    layers: [
+                        {
+                            id: 'base',
+                            zindex: 0,
+                            update: function () {
+                                return true;
+                            },
+                            visible: true,
+                            alpha: 1,
+                            callback: function (id, zi, zf, zp, sz, xMin, xMax, yMin, yMax, tilesize, offsetX, offsetY, alpha) {
+                                map.renderer.context.globalAlpha = alpha;
+                                map.renderer.context.fillStyle = "#000000";
+                                map.renderer.context.fillRect(0, 0, map.renderer.canvas.width, map.renderer.canvas.height);
                             }
-                            for (var t in tileLayers) {
-                                if (tileLayers.hasOwnProperty(t)) {
-                                    tileprovider = tileLayers[t].url;
-                                    map.renderer.context.globalAlpha = tileLayers[t].alpha || alpha;
-                                    map.renderer.tiles[t] = map.renderer.tiles[t] || {};
-                                    tileDone = [];
-                                    for (var x = $.Math.floor(xMin / sz) - preload; x < $.Math.ceil(xMax / sz) + preload; ++x) {
-                                        tileDone[x] = [];
-                                        for (var y = $.Math.floor(yMin / sz) - preload; y < $.Math.ceil(yMax / sz) + preload; ++y) {
-                                            var xoff = $.Math.round((x * sz - xMin) / zp * zf) - offsetX;
-                                            var yoff = $.Math.round((y * sz - yMin) / zp * zf) - offsetY;
-                                            var tileKey = encodeIndex(x, y, zi);
-                                            tileDone[tileKey] = false;
-                                            if (x > maxTileNumber || y > maxTileNumber || x < 0 || y < 0) {
-                                                map.renderer.context.fillStyle = "#dddddd";
-                                                map.renderer.context.fillRect(xoff, yoff, tilesize, tilesize);
-                                                tileDone[tileKey] = true;
-                                            } else {
-                                                if (map.renderer.tiles[t][tileKey] && map.renderer.tiles[t][tileKey].complete) {
-                                                    try {
-                                                        map.renderer.context.drawImage(map.renderer.tiles[t][tileKey], xoff, yoff, tilesize, tilesize);
-                                                        map.renderer.tiles[t][tileKey].lastDrawnId = id;
-                                                    } catch (e) {
-                                                        map.renderer.context.fillStyle = "#dddddd";
-                                                        map.renderer.context.fillRect(xoff, yoff, tilesize, tilesize);
-                                                    }
+                        },
+                        { /* repaint canvas, load missing images */
+                            id: 'tiles',
+                            zindex: 1,
+                            update: function () {
+                                return true;
+                            },
+                            visible: true,
+                            alpha: 1,
+                            callback: function (id, zi, zf, zp, sz, xMin, xMax, yMin, yMax, tilesize, offsetX, offsetY, alpha) {
+                                var tileprovider, tileLayers, maxTileNumber, tileDone, preload, encodeIndex;
+                                var t, x, y, xoff, yoff, tileKey;
+                                var tileAboveX, tileAboveY, tileAboveZ;
+                                var tileOffsetX, tileOffsetY;
+                                var tilePartOffsetX, tilePartOffsetY, tileKeyAbove;
+
+                                maxTileNumber = map.pow(2, zi) - 1;
+                                tileDone = [];
+                                preload = 0;
+                                encodeIndex = function (x, y, z) {
+                                    return x + "," + y + "," + z;
+                                };
+                                if (typeof map.tileprovider === 'function') {
+                                    tileLayers = {
+                                        base: {
+                                            url: map.tileprovider
+                                        }
+                                    };
+                                }
+                                for (t in tileLayers) {
+                                    if (tileLayers.hasOwnProperty(t)) {
+                                        tileprovider = tileLayers[t].url;
+                                        map.renderer.context.globalAlpha = tileLayers[t].alpha || alpha;
+                                        map.renderer.tiles[t] = map.renderer.tiles[t] || {};
+                                        tileDone = [];
+                                        for (x = $.Math.floor(xMin / sz) - preload; x < $.Math.ceil(xMax / sz) + preload; x = x + 1) {
+                                            tileDone[x] = [];
+                                            for (y = $.Math.floor(yMin / sz) - preload; y < $.Math.ceil(yMax / sz) + preload; y = y + 1) {
+                                                xoff = $.Math.round((x * sz - xMin) / zp * zf) - offsetX;
+                                                yoff = $.Math.round((y * sz - yMin) / zp * zf) - offsetY;
+                                                tileKey = encodeIndex(x, y, zi);
+                                                tileDone[tileKey] = false;
+                                                if (x > maxTileNumber || y > maxTileNumber || x < 0 || y < 0) {
+                                                    map.renderer.context.fillStyle = "#dddddd";
+                                                    map.renderer.context.fillRect(xoff, yoff, tilesize, tilesize);
                                                     tileDone[tileKey] = true;
                                                 } else {
-                                                    var tileAboveX = $.Math.floor(x / 2);
-                                                    var tileAboveY = $.Math.floor(y / 2);
-                                                    var tileAboveZ = zi - 1;
-                                                    var tilePartOffsetX = $.Math.ceil(x - tileAboveX * 2);
-                                                    var tilePartOffsetY = $.Math.ceil(y - tileAboveY * 2);
-                                                    var tileKeyAbove = encodeIndex(tileAboveX, tileAboveY, tileAboveZ);
-                                                    if (preload && !map.renderer.tiles[t][tileKeyAbove]) {
-                                                        map.renderer.tiles[t][tileKeyAbove] = new $.Image();
-                                                        map.renderer.tiles[t][tileKeyAbove].src = tileprovider(tileAboveX, tileAboveY, tileAboveZ, map.renderer.tiles[t][tileKeyAbove]);
-                                                        map.renderer.tiles[t][tileKeyAbove].onload = map.renderer.refresh;
-                                                        map.renderer.tiles[t][tileKeyAbove].onerror = null;
-                                                    }
-                                                    if (!tileDone[tileKey] && map.renderer.tiles[t][tileKeyAbove] && map.renderer.tiles[t][tileKeyAbove].lastDrawnId) {
-                                                        var tileOffsetX = xoff - tilePartOffsetX * tilesize;
-                                                        var tileOffsetY = yoff - tilePartOffsetY * tilesize;
+                                                    if (map.renderer.tiles[t][tileKey] && map.renderer.tiles[t][tileKey].complete) {
                                                         try {
-                                                            map.renderer.context.drawImage(
-                                                            map.renderer.tiles[t][tileKeyAbove], tilePartOffsetX * map.renderer.tilesize / 2, tilePartOffsetY * map.renderer.tilesize / 2, map.renderer.tilesize / 2, map.renderer.tilesize / 2, tileOffsetX + tilesize * tilePartOffsetX, tileOffsetY + tilesize * tilePartOffsetY, tilesize, tilesize);
-                                                            map.renderer.tiles[t][tileKeyAbove].lastDrawnId = id;
-                                                        } catch (e_above) {
+                                                            map.renderer.context.drawImage(map.renderer.tiles[t][tileKey], xoff, yoff, tilesize, tilesize);
+                                                            map.renderer.tiles[t][tileKey].lastDrawnId = id;
+                                                        } catch (e) {
                                                             map.renderer.context.fillStyle = "#dddddd";
-                                                            map.renderer.context.fillRect(tileOffsetX, tileOffsetY, $.Math.ceil(2 * tilesize), $.Math.ceil(2 * tilesize));
+                                                            map.renderer.context.fillRect(xoff, yoff, tilesize, tilesize);
                                                         }
                                                         tileDone[tileKey] = true;
                                                     } else {
-                                                        if (!tileDone[tileKey]) {
-                                                            map.renderer.context.fillStyle = "#dddddd";
-                                                            map.renderer.context.fillRect(xoff, yoff, tilesize, tilesize);
-                                                            tileDone[tileKey] = true;
+                                                        tileAboveX = $.Math.floor(x / 2);
+                                                        tileAboveY = $.Math.floor(y / 2);
+                                                        tileAboveZ = zi - 1;
+                                                        tilePartOffsetX = $.Math.ceil(x - tileAboveX * 2);
+                                                        tilePartOffsetY = $.Math.ceil(y - tileAboveY * 2);
+                                                        tileKeyAbove = encodeIndex(tileAboveX, tileAboveY, tileAboveZ);
+                                                        if (preload && !map.renderer.tiles[t][tileKeyAbove]) {
+                                                            map.renderer.tiles[t][tileKeyAbove] = new $.Image();
+                                                            map.renderer.tiles[t][tileKeyAbove].src = tileprovider(tileAboveX, tileAboveY, tileAboveZ, map.renderer.tiles[t][tileKeyAbove]);
+                                                            map.renderer.tiles[t][tileKeyAbove].onload = map.renderer.refresh;
+                                                            map.renderer.tiles[t][tileKeyAbove].onerror = null;
                                                         }
-                                                    }
-                                                    if (!map.renderer.tiles[t][tileKey]) {
-                                                        map.renderer.tiles[t][tileKey] = new $.Image();
-                                                        map.renderer.tiles[t][tileKey].lastDrawnId = 0;
-                                                        map.renderer.tilecount++;
-                                                        map.renderer.tiles[t][tileKey].src = tileprovider(x, y, zi, map.renderer.tiles[t][tileKey]);
-                                                        map.renderer.tiles[t][tileKey].onload = map.renderer.refresh;
-                                                        map.renderer.tiles[t][tileKey].onerror = null;
+                                                        if (!tileDone[tileKey] && map.renderer.tiles[t][tileKeyAbove] && map.renderer.tiles[t][tileKeyAbove].lastDrawnId) {
+                                                            tileOffsetX = xoff - tilePartOffsetX * tilesize;
+                                                            tileOffsetY = yoff - tilePartOffsetY * tilesize;
+                                                            try {
+                                                                map.renderer.context.drawImage(
+                                                                    map.renderer.tiles[t][tileKeyAbove],
+                                                                    tilePartOffsetX * map.renderer.tilesize / 2,
+                                                                    tilePartOffsetY * map.renderer.tilesize / 2,
+                                                                    map.renderer.tilesize / 2,
+                                                                    map.renderer.tilesize / 2,
+                                                                    tileOffsetX + tilesize * tilePartOffsetX,
+                                                                    tileOffsetY + tilesize * tilePartOffsetY,
+                                                                    tilesize,
+                                                                    tilesize
+                                                                );
+                                                                map.renderer.tiles[t][tileKeyAbove].lastDrawnId = id;
+                                                            } catch (e_above) {
+                                                                map.renderer.context.fillStyle = "#dddddd";
+                                                                map.renderer.context.fillRect(tileOffsetX, tileOffsetY, $.Math.ceil(2 * tilesize), $.Math.ceil(2 * tilesize));
+                                                            }
+                                                            tileDone[tileKey] = true;
+                                                        } else {
+                                                            if (!tileDone[tileKey]) {
+                                                                map.renderer.context.fillStyle = "#dddddd";
+                                                                map.renderer.context.fillRect(xoff, yoff, tilesize, tilesize);
+                                                                tileDone[tileKey] = true;
+                                                            }
+                                                        }
+                                                        if (!map.renderer.tiles[t][tileKey]) {
+                                                            map.renderer.tiles[t][tileKey] = new $.Image();
+                                                            map.renderer.tiles[t][tileKey].lastDrawnId = 0;
+                                                            map.renderer.tilecount = map.renderer.tilecount + 1;
+                                                            map.renderer.tiles[t][tileKey].src = tileprovider(x, y, zi, map.renderer.tiles[t][tileKey]);
+                                                            map.renderer.tiles[t][tileKey].onload = map.renderer.refresh;
+                                                            map.renderer.tiles[t][tileKey].onerror = null;
+                                                        }
                                                     }
                                                 }
                                             }
@@ -463,79 +510,82 @@
                                     }
                                 }
                             }
-                        }
-                    },
-                    {
-                        id: 'markers',
-                        zindex: 99,
-                        update: function () {
-                            if (map.markers) {
-                                return true;
-                            }
-                            return false;
                         },
-                        visible: true,
-                        alpha: 1,
-                        callback: function (id, zi, zf, zp, sz, xMin, xMax, yMin, yMax, tilesize, offsetX, offsetY, alpha) {
-                            for (var marker in map.markers) {
-                                if (map.markers.hasOwnProperty(marker)) {
-                                    if (map.markers[marker].img && map.markers[marker].img.complete) {
-                                        var x = $.Math.round((map.pos.lon2posX(map.markers[marker].lon) - xMin) / zp * zf) + map.markers[marker].offsetX - offsetX;
-                                        var y = $.Math.round((map.pos.lat2posY(map.markers[marker].lat) - yMin) / zp * zf) + map.markers[marker].offsetY - offsetY;
-                                        if (x > -50 && x < map.renderer.canvas.width + 50 && y > -50 && y < map.renderer.canvas.height + 50) {
-                                            try {
-                                                map.renderer.context.globalAlpha = map.markers[marker].alpha || alpha;
-                                                map.renderer.context.drawImage(map.markers[marker].img, x, y);
-                                                map.markers[marker].bbox = [x, y + map.markers[marker].img.height, x + map.markers[marker].img.width, y];
-                                            } catch (e) {}
+                        {
+                            id: 'markers',
+                            zindex: 99,
+                            update: function () {
+                                if (map.markers) {
+                                    return true;
+                                }
+                                return false;
+                            },
+                            visible: true,
+                            alpha: 1,
+                            callback: function (id, zi, zf, zp, sz, xMin, xMax, yMin, yMax, tilesize, offsetX, offsetY, alpha) {
+                                var marker, x, y;
+                                for (marker in map.markers) {
+                                    if (map.markers.hasOwnProperty(marker)) {
+                                        if (map.markers[marker].img && map.markers[marker].img.complete) {
+                                            x = $.Math.round((map.pos.lon2posX(map.markers[marker].lon) - xMin) / zp * zf) + map.markers[marker].offsetX - offsetX;
+                                            y = $.Math.round((map.pos.lat2posY(map.markers[marker].lat) - yMin) / zp * zf) + map.markers[marker].offsetY - offsetY;
+                                            if (x > -50 && x < map.renderer.canvas.width + 50 && y > -50 && y < map.renderer.canvas.height + 50) {
+                                                try {
+                                                    map.renderer.context.globalAlpha = map.markers[marker].alpha || alpha;
+                                                    map.renderer.context.drawImage(map.markers[marker].img, x, y);
+                                                    map.markers[marker].bbox = [x, y + map.markers[marker].img.height, x + map.markers[marker].img.width, y];
+                                                } catch (e) {}
+                                            }
+                                        } else {
+                                            map.markers[marker].img = new $.Image();
+                                            map.markers[marker].img.src = map.markers[marker].src;
+                                            map.markers[marker].img.onload = map.renderer.refresh;
                                         }
-                                    } else {
-                                        map.markers[marker].img = new $.Image();
-                                        map.markers[marker].img.src = map.markers[marker].src;
-                                        map.markers[marker].img.onload = map.renderer.refresh;
                                     }
                                 }
                             }
-                        }
-                    },
-                    {
-                        id: 'tracks',
-                        zindex: 1,
-                        update: function () {
-                            if (map.tracks) {
-                                return true;
-                            }
-                            return false;
                         },
-                        visible: true,
-                        alpha: 0.8,
-                        callback: function (id, zi, zf, zp, sz, xMin, xMax, yMin, yMax, tilesize, offsetX, offsetY, alpha) {
-                            map.renderer.context.globalAlpha = alpha;
+                        {
+                            id: 'tracks',
+                            zindex: 1,
+                            update: function () {
+                                if (map.tracks) {
+                                    return true;
+                                }
+                                return false;
+                            },
+                            visible: true,
+                            alpha: 0.8,
+                            callback: function (id, zi, zf, zp, sz, xMin, xMax, yMin, yMax, tilesize, offsetX, offsetY, alpha) {
+                                var t, track, i;
 
-                            function lon2x(lon) {
-                                return Math.round((map.pos.lon2posX(lon) - xMin) / zp * zf) - offsetX;
-                            }
+                                map.renderer.context.globalAlpha = alpha;
 
-                            function lat2y(lat) {
-                                return Math.round((map.pos.lat2posY(lat) - yMin) / zp * zf) - offsetY;
-                            }
-                            for (var t in map.tracks) {
-                                if (map.tracks.hasOwnProperty(t)) {
-                                    var track = map.tracks[t];
-                                    map.renderer.context.globalAlpha = track.alpha || alpha;
-                                    map.renderer.context.strokeStyle = track.strokeStyle;
-                                    map.renderer.context.lineWidth = track.lineWidth;
-                                    map.renderer.context.beginPath();
-                                    map.renderer.context.moveTo(lon2x(track.points[0][0]), lat2y(track.points[0][1]));
-                                    for (var i = 1; i < track.points.length; i++) {
-                                        map.renderer.context.lineTo(lon2x(track.points[i][0]), lat2y(track.points[i][1]));
+                                function lon2x(lon) {
+                                    return Math.round((map.pos.lon2posX(lon) - xMin) / zp * zf) - offsetX;
+                                }
+
+                                function lat2y(lat) {
+                                    return Math.round((map.pos.lat2posY(lat) - yMin) / zp * zf) - offsetY;
+                                }
+                                for (t in map.tracks) {
+                                    if (map.tracks.hasOwnProperty(t)) {
+                                        track = map.tracks[t];
+                                        map.renderer.context.globalAlpha = track.alpha || alpha;
+                                        map.renderer.context.strokeStyle = track.strokeStyle;
+                                        map.renderer.context.lineWidth = track.lineWidth;
+                                        map.renderer.context.beginPath();
+                                        map.renderer.context.moveTo(lon2x(track.points[0][0]), lat2y(track.points[0][1]));
+                                        for (i = 1; i < track.points.length; i = i + 1) {
+                                            map.renderer.context.lineTo(lon2x(track.points[i][0]), lat2y(track.points[i][1]));
+                                        }
+                                        map.renderer.context.stroke();
+                                        map.renderer.context.closePath();
                                     }
-                                    map.renderer.context.stroke();
-                                    map.renderer.context.closePath();
                                 }
                             }
                         }
-                    }],
+                    ],
                     refresh: function () {
                         var now = function () {
                             return (new $.Date()).getTime();
@@ -546,7 +596,7 @@
                             return;
                         }
                         map.renderer.refreshLastStart = now();
-                        var refreshId = ++map.renderer.refreshCounter;
+                        var refreshId = map.renderer.refreshCounter + 1;
                         var z = map.pos.getZoom();
                         var zi = parseInt(z, 10);
                         var zf = map.useFractionalZoom ? (1 + z - zi) : 1;
@@ -561,14 +611,15 @@
                         var yMax = Math.ceil(map.pos.y + h / 2);
                         var offsetX = Math.round((zf - 1) * (xMax - xMin) / zp / 2);
                         var offsetY = Math.round((zf - 1) * (yMax - yMin) / zp / 2);
-                        for (var l in map.renderer.layers) {
-                            if (map.renderer.layers.hasOwnProperty(l)) {
-                                if (map.renderer.layers[l].visible && map.renderer.layers[l].update()) {
-                                    map.renderer.layers[l].callback(refreshId, zi, zf, zp, sz, xMin, xMax, yMin, yMax, tilesize, offsetX, offsetY, map.renderer.layers[l].alpha);
+                        var ll, i;
+                        for (ll in map.renderer.layers) {
+                            if (map.renderer.layers.hasOwnProperty(ll)) {
+                                if (map.renderer.layers[ll].visible && map.renderer.layers[ll].update()) {
+                                    map.renderer.layers[ll].callback(refreshId, zi, zf, zp, sz, xMin, xMax, yMin, yMax, tilesize, offsetX, offsetY, map.renderer.layers[ll].alpha);
                                 }
                             }
                         }
-                        for (var i = 0; i < map.renderer.refreshListeners.length; i++) {
+                        for (i = 0; i < map.renderer.refreshListeners.length; i = i + 1) {
                             map.renderer.refreshListeners[i]();
                         }
                     },
@@ -578,29 +629,30 @@
                     refreshListeners: {},
                     /* garbage collector, purges tiles if more than 500 are loaded and tile is more than 100 refresh cycles old */
                     garbage: function () {
+                        var remove, key, i;
                         if (map.renderer.tilecount > 500) {
                             if (map.renderer.tiles) {
-                                var remove = [];
-                                for (var key in map.renderer.tiles) {
-                                    if (map.renderer.tiles[key] && map.renderer.tiles[key].complete && map.renderer.tiles[key].lastDrawnId < (map.renderer.refreshCounter - 100)) {
+                                remove = [];
+                                for (key in map.renderer.tiles) {
+                                    if (map.renderer.tiles.hasOwnProperty(key) && map.renderer.tiles[key] && map.renderer.tiles[key].complete && map.renderer.tiles[key].lastDrawnId < (map.renderer.refreshCounter - 100)) {
                                         remove.push(key);
                                     }
                                 }
-                                for (var i = 0; i < remove.length; i++) {
+                                for (i = 0; i < remove.length; i = i + 1) {
                                     delete map.renderer.tiles[remove[i]];
                                 }
-                                map.renderer.tilecount -= i;
+                                map.renderer.tilecount = map.renderer.tilecount - i;
                             }
                         }
                     }
                 },
                 /* positioning, conversion between pixel + lon/lat */
                 pos: {
-                    visibleSize: function() {
+                    visibleSize: function () {
                         if (!map.pos.cachedValues ||
-                                map.pos.cachedValues.zoom != map.pos.z ||
-                                map.pos.cachedValues.width != map.renderer.canvas.width ||
-                                map.pos.cachedValues.height != map.renderer.canvas.height) {
+                                map.pos.cachedValues.zoom !== map.pos.z ||
+                                map.pos.cachedValues.width !== map.renderer.canvas.width ||
+                                map.pos.cachedValues.height !== map.renderer.canvas.height) {
                             map.pos.cachedValues = {};
                             map.pos.cachedValues.zi = parseInt(map.pos.z, 10);
                             map.pos.cachedValues.zp = map.pow(2, map.renderer.maxZ - map.pos.cachedValues.zi);
@@ -613,43 +665,44 @@
                         return map.pos.cachedValues;
                     },
                     setX: function (x) {
+                        var vs, xMin, xMax;
                         if (map.pos.minX && map.pos.maxX) {
-                            var vs =  map.pos.visibleSize();
-                            var xMin = Math.floor(x - vs.w/2);
-                            var xMax = Math.ceil(x + vs.w/2);
-                            if (xMin < map.pos.minX)  {
+                            vs =  map.pos.visibleSize();
+                            xMin = Math.floor(x - vs.w / 2);
+                            xMax = Math.ceil(x + vs.w / 2);
+                            if (xMin < map.pos.minX) {
                                 x = map.pos.minX + vs.w / 2;
-                            }
-                            else if (xMax > map.pos.maxX) {
+                            } else if (xMax > map.pos.maxX) {
                                 x = map.pos.maxX - vs.w / 2;
                             }
                         }
                         map.pos.x = x;
                     },
                     setY: function (y) {
-                         if (map.pos.minY && map.pos.maxY) {
-                             var vs =  map.pos.visibleSize();
-                             var yMin = Math.floor(y - vs.h/2);
-                             var yMax = Math.ceil(y + vs.h/2);
-                              if (yMin < map.pos.minY)  {
-                                 y = map.pos.minY + vs.h/2;
-                             }
-                             else if (yMax > map.pos.maxY) {
-                                 y = map.pos.maxY - vs.h/2;
-                             }
-                         }
-                         map.pos.y = y;
+                        var vs, yMin, yMax;
+                        if (map.pos.minY && map.pos.maxY) {
+                            vs =  map.pos.visibleSize();
+                            yMin = Math.floor(y - vs.h / 2);
+                            yMax = Math.ceil(y + vs.h / 2);
+                            if (yMin < map.pos.minY) {
+                                y = map.pos.minY + vs.h / 2;
+                            } else if (yMax > map.pos.maxY) {
+                                y = map.pos.maxY - vs.h / 2;
+                            }
+                        }
+                        map.pos.y = y;
                     },
-                    getVisibleBounds: function() {
-                        var vs =  map.pos.visibleSize();
-                        var visBounds = {}; 
-                        visBounds.left = map.pos.tile2lon((map.pos.x - vs.w/2) / map.renderer.tilesize, map.renderer.maxZ);
-                        visBounds.right = map.pos.tile2lon((map.pos.x + vs.w/2) / map.renderer.tilesize,map.renderer.maxZ);
-                        visBounds.top = map.pos.tile2lat((map.pos.y - vs.h/2) / map.renderer.tilesize, map.renderer.maxZ);
-                        visBounds.bottom = map.pos.tile2lat((map.pos.y + vs.h/2) / map.renderer.tilesize, map.renderer.maxZ);
+                    getVisibleBounds: function () {
+                        var vs, visBounds;
+                        vs =  map.pos.visibleSize();
+                        visBounds = {};
+                        visBounds.left = map.pos.tile2lon((map.pos.x - vs.w / 2) / map.renderer.tilesize, map.renderer.maxZ);
+                        visBounds.right = map.pos.tile2lon((map.pos.x + vs.w / 2) / map.renderer.tilesize, map.renderer.maxZ);
+                        visBounds.top = map.pos.tile2lat((map.pos.y - vs.h / 2) / map.renderer.tilesize, map.renderer.maxZ);
+                        visBounds.bottom = map.pos.tile2lat((map.pos.y + vs.h / 2) / map.renderer.tilesize, map.renderer.maxZ);
                         return visBounds;
                     },
-                   setCenter: function (coords, options) {
+                    setCenter: function (coords, options) {
                         options = options || {};
                         var animated = options.animated || false;
                         var zoomChanged = false;
@@ -664,8 +717,7 @@
                             if (map.events.dragging || options.animationStep) {
                                 options.dragging = map.events.dragging;
                                 map.moved(options);
-                            }
-                            else {
+                            } else {
                                 map.moveEnded(options);
                             }
                             if (zoomChanged) {
@@ -689,22 +741,23 @@
                             y: current.y + dy
                         }, options);
                     },
-                    boundZoom: function(z) {
+                    boundZoom: function (z) {
                         if (typeof z !== 'number') {
                             return map.pos.z || map.renderer.minZ;
                         }
-                        else if (z < map.renderer.minZ) {
-                             return map.renderer.minZ;
+                        if (z < map.renderer.minZ) {
+                            return map.renderer.minZ;
                         }
-                        else if (z > map.renderer.maxZ) {
-                             return map.renderer.maxZ;
+                        if (z > map.renderer.maxZ) {
+                            return map.renderer.maxZ;
                         }
                         return z;
                     },
                     setZoom: function (z, options) {
+                        var animated;
                         z = map.pos.boundZoom(z);
                         options = options || {};
-                        var animated = options.animated || false;
+                        animated = options.animated || false;
                         if (!animated) {
                             map.pos.z = z;
                             map.renderer.refresh();
@@ -736,10 +789,11 @@
                         return (x / map.pow(2, z) * 360 - 180);
                     },
                     tile2lat: function (y, z) {
+                        var n;
                         if (typeof z === 'undefined') {
                             z = map.pos.getZoom();
                         }
-                        var n = $.Math.PI - 2 * $.Math.PI * y / map.pow(2, z);
+                        n = $.Math.PI - 2 * $.Math.PI * y / map.pow(2, z);
                         return (180 / $.Math.PI * $.Math.atan(0.5 * ($.Math.exp(n) - $.Math.exp(-n))));
                     },
                     animation: {
@@ -763,11 +817,10 @@
                                 if (state > 1) {
                                     state = 1;
                                 }
-                                if(typeof func !== "function") {
+                                if (typeof func !== "function") {
                                     return map.pow(state, 2);
-                                } else {
-                                    return func(state, 2);
                                 }
+                                return func(state, 2);
                             }
                         },
                         start: function (x, y, z) {
@@ -786,7 +839,7 @@
                             if (typeof z !== 'undefined' && z !== false && z >= 0) {
                                 map.pos.animation.descriptor.to.z = z;
                             } else {
-                                map.pos.animation.descriptor.to.z = map.pos.z;                            
+                                map.pos.animation.descriptor.to.z = map.pos.z;
                             }
                             $.setTimeout(map.pos.animation.step, map.pos.animation.interval);
                         },
@@ -805,7 +858,7 @@
                                 });
                             } else {
                                 progressXY = map.pos.animation.ease();
-                                progressZ = map.pos.animation.ease(function(base, exp){
+                                progressZ = map.pos.animation.ease(function (base, exp) {
                                     return base;
                                 });
                                 if (typeof map.pos.animation.descriptor.to.x !== 'undefined' && map.pos.animation.descriptor.to.x !== false) {
@@ -829,39 +882,40 @@
                         }
                     }
                 },
-               pow: function(base, exp){
-                   if(map.cache && map.cache.pow){
-                    if(map.cache.pow[base] && map.cache.pow[base][exp]){
-                        return map.cache.pow[base][exp];
-                    } else {
-                        if(!map.cache.pow[base]){
+                pow: function (base, exp) {
+                    if (map.cache && map.cache.pow) {
+                        if (map.cache.pow[base] && map.cache.pow[base][exp]) {
+                            return map.cache.pow[base][exp];
+                        }
+                        if (!map.cache.pow[base]) {
                             map.cache.pow[base] = [];
                         }
                         map.cache.pow[base][exp] = $.Math.pow(base, exp);
                         return map.cache.pow[base][exp];
                     }
-                   } else {
                     map.cache = {};
                     map.cache.pow = [];
-                   }
                     return $.Math.pow(base, exp);
-               }
+                }
             };
             return { /* public functions */
                 init: function (config) { /* init extensions first */
-                    for (var e in slippymap.extension) {
-                        if (typeof slippymap.extension[e] === 'function') {
-                            this[e] = slippymap.extension[e](map);
-                            if (typeof this[e].init === 'function') {
-                                this[e].init();
-                            }
-                        } else {
-                            this[e] = {};
-                            for (var sub in slippymap.extension[e]) {
-                                if (slippymap.extension[e].hasOwnProperty(sub)) {
-                                    this[e][sub] = slippymap.extension[e][sub](map);
-                                    if (typeof this[e][sub].init === 'function') {
-                                        this[e][sub].init();
+                    var e, sub;
+                    for (e in slippymap.extension) {
+                        if (slippymap.extension.hasOwnProperty(e)) {
+                            if (typeof slippymap.extension[e] === 'function') {
+                                this[e] = slippymap.extension[e](map);
+                                if (typeof this[e].init === 'function') {
+                                    this[e].init();
+                                }
+                            } else {
+                                this[e] = {};
+                                for (sub in slippymap.extension[e]) {
+                                    if (slippymap.extension[e].hasOwnProperty(sub)) {
+                                        this[e][sub] = slippymap.extension[e][sub](map);
+                                        if (typeof this[e][sub].init === 'function') {
+                                            this[e][sub].init();
+                                        }
                                     }
                                 }
                             }
@@ -880,74 +934,64 @@
                             y: map.pos.y,
                             z: map.pos.getZoom()
                         };
-                    } else {
-                        map.pos.setX(parseFloat(coords.x));
-                        map.pos.setY(parseFloat(coords.y));
-                        map.pos.setZoom(parseFloat(coords.z), options);
-                        map.renderer.refresh();
                     }
+                    map.pos.setX(parseFloat(coords.x));
+                    map.pos.setY(parseFloat(coords.y));
+                    map.pos.setZoom(parseFloat(coords.z), options);
+                    map.renderer.refresh();
                     return this;
                 },
                 zoom: function (z, options) {
                     if (typeof z !== 'number') {
                         return map.pos.getZoom();
-                    } else {
-                        map.pos.setZoom(z, options);
-                        return this;
                     }
+                    map.pos.setZoom(z, options);
+                    return this;
                 },
                 maxZ: function (z) {
                     if (typeof z !== 'number') {
                         return map.renderer.maxZ;
                     }
-                    else {
-                        if (z < map.renderer.minZ) {
-                            map.renderer.maxZ = map.renderer.minZ;
-                        }
-                        else {
-                            map.renderer.maxZ = z;
-                        }
-                     }
+                    if (z < map.renderer.minZ) {
+                        map.renderer.maxZ = map.renderer.minZ;
+                    } else {
+                        map.renderer.maxZ = z;
+                    }
                     return this;
                 },
                 minZ: function (z) {
                     if (typeof z !== 'number') {
                         return map.renderer.minZ;
                     }
-                    else {
-                        if (z < 0) {
-                            map.renderer.minZ = 0;
-                        }
-                        else if (z > map.renderer.maxZ) {
-                            map.renderer.minZ = map.renderer.maxZ;
-                        }
-                        else {
-                            map.renderer.minZ = z;
-                        }
+                    if (z < 0) {
+                        map.renderer.minZ = 0;
+                    } else if (z > map.renderer.maxZ) {
+                        map.renderer.minZ = map.renderer.maxZ;
+                    } else {
+                        map.renderer.minZ = z;
                     }
                     return this;
                 },
-                setPanBounds: function(left, top, right, bottom) {
-                    if (typeof left == 'number' && typeof top == 'number' &&
-                        typeof right == 'number' && typeof bottom == 'number' &&
-                        parseFloat(left) < parseFloat(right) &&
-                        parseFloat(bottom) < parseFloat(top) ) {
+                setPanBounds: function (left, top, right, bottom) {
+                    if (typeof left === 'number' && typeof top === 'number' &&
+                            typeof right === 'number' && typeof bottom === 'number' &&
+                            parseFloat(left) < parseFloat(right) &&
+                            parseFloat(bottom) < parseFloat(top)) {
                         map.pos.minX = map.pos.lon2posX(parseFloat(left));
                         map.pos.maxX = map.pos.lon2posX(parseFloat(right));
                         map.pos.minY = map.pos.lat2posY(parseFloat(top));    // NB pixel origin is top left
                         map.pos.maxY = map.pos.lat2posY(parseFloat(bottom)); // NB pixel origin is top left
                     }
                 },
-                getVisibleBounds: function() {
+                getVisibleBounds: function () {
                     return map.pos.getVisibleBounds();
                 },
                 coords: function (coords) {
                     if (typeof coords !== 'object') {
                         return map.pos.getLonLat();
-                    } else {
-                        map.recenter(parseFloat(coords.lon), parseFloat(coords.lat), parseFloat(coords.zoom));
-                        map.renderer.refresh();
                     }
+                    map.recenter(parseFloat(coords.lon), parseFloat(coords.lat), parseFloat(coords.zoom));
+                    map.renderer.refresh();
                     return this;
                 },
                 refresh: function () {
@@ -957,17 +1001,15 @@
                 width: function (width) {
                     if (typeof width !== 'number') {
                         return map.renderer.canvas.width;
-                    } else {
-                        map.renderer.canvas.width = width;
                     }
+                    map.renderer.canvas.width = width;
                     return this;
                 },
                 height: function (height) {
                     if (typeof height !== 'number') {
                         return map.renderer.canvas.height;
-                    } else {
-                        map.renderer.canvas.height = height;
                     }
+                    map.renderer.canvas.height = height;
                     return this;
                 },
                 addMovedListeners: function (listener) {
@@ -994,81 +1036,76 @@
                     if (typeof tiles !== 'undefined') {
                         map.renderer.tiles = tiles;
                     } else {
-                        if (map.renderer.tiles.length == 1) {
+                        if (map.renderer.tiles.length === 1) {
                             return map.renderer.tiles[0];
-                        } else {
-                            return map.renderer.tiles;
-                        }                   
+                        }
+                        return map.renderer.tiles;
                     }
                     return this;
                 },
                 tileProvider: function (provider) {
                     if (typeof provider !== 'function') {
                         return map.tileprovider;
-                    } else {
-                        map.tileprovider = provider;
-                        delete map.renderer.tiles;
-                        map.renderer.tiles = [];
-                        map.renderer.refresh();                 
                     }
+                    map.tileprovider = provider;
+                    delete map.renderer.tiles;
+                    map.renderer.tiles = [];
+                    map.renderer.refresh();
                     return this;
                 },
                 markers: function (markers) {
                     if (typeof markers !== 'object') {
                         return map.markers;
-                    } else {
-                        map.markers = markers;
-                        map.renderer.refresh();
                     }
+                    map.markers = markers;
+                    map.renderer.refresh();
                     return this;
                 },
                 marker: function (id, marker) {
                     if (id && typeof marker !== 'object') {
                         return map.markers[id];
-                    } else {
-                        map.markers[id] = marker;
-                        map.renderer.refresh();
                     }
+                    map.markers[id] = marker;
+                    map.renderer.refresh();
                     return this;
                 },
                 tracks: function (tracks) {
                     if (typeof tracks !== 'object') {
                         return map.tracks;
-                    } else {
-                        map.tracks = tracks;
-                        map.renderer.refresh();
                     }
-                    return this;                    
+                    map.tracks = tracks;
+                    map.renderer.refresh();
+                    return this;
                 },
                 tileSize: function (size) {
                     if (typeof size !== 'number') {
                         return map.renderer.tilesize;
-                    } else {
-                        map.renderer.tilesize = size;
                     }
+                    map.renderer.tilesize = size;
+                    return this;
                 },
                 fractionalZoom: function (state) {
                     if (state !== true && state !== false) {
                         return map.useFractionalZoom;
-                    } else {
-                        map.useFractionalZoom = state;
                     }
+                    map.useFractionalZoom = state;
+                    return this;
                 },
                 scrollMomentum: function (state) {
                     if (state !== true && state !== false) {
                         return map.scrollMomentum;
-                    } else {
-                        map.scrollMomentum = state;
                     }
+                    map.scrollMomentum = state;
+                    return this;
                 }
             };
         };
-        slippymap.debug = function(params){
-            if(typeof window.console !== "undefined") {
+        slippymap.debug = function (params) {
+            if (typeof window.console !== "undefined") {
                 window.console.log(params);
             }
         };
         slippymap.extension = {};
         window.slippymap = slippymap;
     }
-})(window);
+}(window));
