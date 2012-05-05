@@ -79,14 +79,10 @@ document.addEventListener('DOMContentLoaded', function () {
             menulist.selectEvent.subscribe(function (id) {
                 switch (id) {
                 case 'geolocate':
-                    home();
-                   	canvas.geolocation.location();
+                    geolocate();
                     break;
                 case 'watchposition':
-                    home();
-                    canvas.geolocation.watch(false, geoerror, {
-                        enableHighAccuracy: true
-                    });
+                    watchposition();
                     break;
                 case 'mark':
                     home();
@@ -279,14 +275,19 @@ document.addEventListener('DOMContentLoaded', function () {
             new joTitle("Geolocation Error"), new joGroup([
             new joHTML("<h3>Error</h3><p>" + error.message + "</p>"), ]), new joFooter([
             new joDivider(), cancelgeoerror = new joButton("Back")])]);
-            cancelgeoerror.selectEvent.subscribe(back, this);
+            cancelgeoerror.selectEvent.subscribe(home, this);
             stack.push(geoerror);
         }
 
 
+        function watchposition() {
+            canvas.geolocation.watch(geosuccess, geoerror, {enableHighAccuracy: true});
+        }
+
         function geolocate() {
             canvas.geolocation.location(geosuccess, geoerror);
         }
+
 
         function back() {
             stack.back();
