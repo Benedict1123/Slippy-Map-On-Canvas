@@ -79,21 +79,21 @@ document.addEventListener('DOMContentLoaded', function () {
             menulist.selectEvent.subscribe(function (id) {
                 switch (id) {
                 case 'geolocate':
-                    stack.pop();
+                    home();
                    	canvas.geolocation.location();
                     break;
                 case 'watchposition':
-                    stack.pop();
+                    home();
                     canvas.geolocation.watch(false, geoerror, {
                         enableHighAccuracy: true
                     });
                     break;
                 case 'mark':
-                    stack.pop();
+                    home();
 					addmarker();
                     break;
                 case 'clear':
-                    stack.pop();
+                    home();
                     canvas.markers({});
                     canvas.refresh();
 
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     break;
                 }
-                stack.pop();
+                home();
                 canvas.tileProvider(tileprovider);
             }, this);
 
@@ -220,9 +220,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         cancelfound.selectEvent.subscribe(back, this);
 
                         foundmenulist.selectEvent.subscribe(function (id) {
-                            stack.pop();
-                            stack.pop();
-                            stack.pop();
+                            home();
                             canvas.coords({lat:parseFloat(id[0]), lon:parseFloat(id[1]), zoom:parseFloat(id[2])});
 							addmarker(id[3]);
                         });
@@ -291,10 +289,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         function back() {
-            stack.pop();
+            stack.back();
 		}
 		
         function home() {
+            stack.home();
             stack.push(map);
         }
 
