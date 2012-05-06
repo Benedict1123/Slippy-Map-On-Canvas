@@ -12,7 +12,7 @@
 		<script type="text/javascript">
 			document.addEventListener('DOMContentLoaded', function(){
 				var map =  slippymap({tileprovider: function(x,y,z){
-					return '../tile_proxy.php?url=' +
+					return '../proxy/tiles.php?url=' +
 							"http://a.tile.openstreetmap.org/" + z + "/" + x + "/" + y + ".png";
 				}}).init();
 				document.querySelectorAll("#buttons .zoomin")[0].addEventListener('click', map.zoomIn, false);

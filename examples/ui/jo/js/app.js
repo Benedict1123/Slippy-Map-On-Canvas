@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             findreq = function () {
                 if (useProxy) {
-                    var url = '../../../search_proxy.php?q=' + escape(nameinput.container.innerHTML) + '&maxRows=50'; // &fuzzy=0';
+                    var url = '../../../proxy/search.php?q=' + escape(nameinput.container.innerHTML) + '&maxRows=50'; // &fuzzy=0';
                 } else {
                     var url = 'http://ws.geonames.org/searchJSON?q=' + escape(nameinput.container.innerHTML) + '&maxRows=50'; // &fuzzy=0';
                 }
@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             findagainreq = function () {
                 if (useProxy) {
-                    var url = '../../../search_proxy.php?q=' + escape(nameinputagain.container.innerHTML) + '&maxRows=50&fuzzy=1';
+                    var url = '../../../proxy/search.php?q=' + escape(nameinputagain.container.innerHTML) + '&maxRows=50&fuzzy=1';
                 } else {
                     var url = 'http://ws.geonames.org/searchJSON?q=' + escape(nameinputagain.container.innerHTML) + '&maxRows=50&fuzzy=1';
 

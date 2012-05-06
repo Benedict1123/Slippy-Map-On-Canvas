@@ -34,7 +34,7 @@
                 zMin: 0,
                 zMax: 18,
                 cacheValues: true,
-                preloadMargin : 1
+                preloadMargin : 0
             };
             /* merge defaults and options */
             if (typeof options === "object") {
@@ -124,6 +124,7 @@
                     lastTouchEventBeforeLast: {},
                     mouseDown: function (event) {
                         var x, y;
+                        map.pos.animation.stop();
                         if (!event) {
                             event = $.event;
                         }
@@ -178,6 +179,7 @@
                     },
                     mouseWheel: function (event) {
                         var delta = 0;
+                        map.pos.animation.stop();
                         if (!event) {
                             event = $.event;
                         }
@@ -191,12 +193,12 @@
                         }
                         if (delta > 0) {
                             map.pos.zoomIn({
-                                step: delta / 100,
+                                step: delta / 10,
                                 mouseWheel: true
                             });
                         } else if (delta < 0) {
                             map.pos.zoomOut({
-                                step: -delta / 100,
+                                step: -delta / 10,
                                 mouseWheel: true
                             });
                         }
@@ -206,6 +208,7 @@
                     },
                     doubleClick: function (event) {
                         var x, y, dX, dY;
+                        map.pos.animation.stop();
                         if (!event) {
                             event = $.event;
                         }
@@ -230,6 +233,7 @@
                     /* maps touch events to mouse events */
                     touchHandler: function (event) {
                         var now, touches, type, first, simulatedEvent;
+                        map.pos.animation.stop();
                         now = function () {
                             return (new $.Date()).getTime();
                         };
@@ -271,10 +275,13 @@
                     },
                     /* minimal pinch support */
                     gestureHandler: function (event) {
+                        map.pos.animation.stop();
                         if (event.scale) {
                             if (event.scale > 1) {
                                 map.pos.zoomIn({
                                     step: (event.scale - 1) / 10,
+                                    round: false,
+                                    animated: false,
                                     gesture: true
                                 });
                                 return true;
@@ -282,6 +289,8 @@
                             if (event.scale < 1) {
                                 map.pos.zoomOut({
                                     step: event.scale / 10,
+                                    round: false,
+                                    animated: false,
                                     gesture: true
                                 });
                                 return true;
@@ -322,7 +331,39 @@
                     refreshLastStart: 0,
                     refreshFPS: 50,
                     refreshListeners: {},
-
+                    blank : function (color, x, y, width, height) {
+                        x = $.Math.floor(x);
+                        y = $.Math.floor(y);
+                        width = $.Math.ceil(width);
+                        height = $.Math.ceil(height);
+                        map.renderer.context.fillStyle = color;
+                        map.renderer.context.fillRect(x, y, width, height);
+                    },
+                    drawImage : function (image, fallbackColor, x, y, width, height) {
+                        x = $.Math.floor(x);
+                        y = $.Math.floor(y);
+                        width = $.Math.ceil(width);
+                        height = $.Math.ceil(height);
+                        try {
+                            map.renderer.context.drawImage(
+                                image,
+                                x,
+                                y,
+                                width,
+                                height
+                            );
+                            return true;
+                        } catch (e) {
+                            map.renderer.blank(
+                                fallbackColor,
+                                x,
+                                y,
+                                width,
+                                height
+                            );
+                            return false;
+                        }
+                    },
                     addLayer: function (layer) {
                         map.renderer.layers.push(layer);
                         map.renderer.sortLayers();
@@ -348,8 +389,7 @@
 
                             callback: function (id, viewport, alpha) {
                                 map.renderer.context.globalAlpha = alpha;
-                                map.renderer.context.fillStyle = "#000000";
-                                map.renderer.context.fillRect(0, 0, map.renderer.canvas.width, map.renderer.canvas.height);
+                                map.renderer.blank("#ff0000", 0, 0, map.renderer.canvas.width, map.renderer.canvas.height);
                             }
                         },
                         { /* repaint canvas, load missing images */
@@ -361,18 +401,21 @@
                             visible: true,
                             alpha: 1,
                             callback: function (id, viewport, alpha) {
-                                var tileprovider, tileLayers, maxTileNumber, tileDone, preload, encodeIndex;
-                                var t, x, y, xoff, yoff, tileKey;
-                                var tileAboveX, tileAboveY, tileAboveZ;
-                                var tileOffsetX, tileOffsetY;
-                                var tilePartOffsetX, tilePartOffsetY, tileKeyAbove;
+                                var tileprovider, tileLayers, maxTileNumber, tileDone, preload,
+                                    t, x, y, xoff, yoff, tileKey,
+                                    tileAboveX, tileAboveY, tileAboveZ, tileKeyAbove,
+                                    tilePartOffsetX, tilePartOffsetY,
+                                    tileOffsetX, tileOffsetY,
+                                    encodeIndex,
+                                    tileLoadingCue = [],
+                                    tileLoading, tileLoadingKey, tileLoadingCueLength;
 
+                                encodeIndex = function (x, y, z) {
+                                    return x + "-" + y + "-" + z;
+                                };
                                 maxTileNumber = map.pow(2, viewport.zi) - 1;
                                 tileDone = [];
                                 preload = map.preloadMargin;
-                                encodeIndex = function (x, y, z) {
-                                    return x + "," + y + "," + z;
-                                };
                                 if (typeof map.tileprovider === 'function') {
                                     tileLayers = {
                                         base: {
@@ -380,8 +423,8 @@
                                         }
                                     };
                                 } else {
-                                	tileLayers = map.tileprovider;
-                            	}
+                                    tileLayers = map.tileprovider;
+                                }
 
                                 for (t in tileLayers) {
                                     if (tileLayers.hasOwnProperty(t)) {
@@ -392,77 +435,112 @@
                                         for (x = $.Math.floor(viewport.xMin / viewport.sz) - preload; x < $.Math.ceil(viewport.xMax / viewport.sz) + preload; x = x + 1) {
                                             tileDone[x] = [];
                                             for (y = $.Math.floor(viewport.yMin / viewport.sz) - preload; y < $.Math.ceil(viewport.yMax / viewport.sz) + preload; y = y + 1) {
-                                                xoff = $.Math.round((x * viewport.sz - viewport.xMin) / viewport.zp * viewport.zf) - viewport.offsetX;
-                                                yoff = $.Math.round((y * viewport.sz - viewport.yMin) / viewport.zp * viewport.zf) - viewport.offsetY;
+                                                xoff = ((x * viewport.sz - viewport.xMin) / viewport.zp * viewport.zf) - viewport.offsetX;
+                                                yoff = ((y * viewport.sz - viewport.yMin) / viewport.zp * viewport.zf) - viewport.offsetY;
                                                 tileKey = encodeIndex(x, y, viewport.zi);
                                                 tileDone[tileKey] = false;
                                                 if (x > maxTileNumber || y > maxTileNumber || x < 0 || y < 0) {
-                                                    map.renderer.context.fillStyle = "#dddddd";
-                                                    map.renderer.context.fillRect(xoff, yoff, viewport.tilesize, viewport.tilesize);
+                                                    // out of xyz bounds
+                                                    map.renderer.blank(
+                                                        "#dddddd",
+                                                        xoff,
+                                                        yoff,
+                                                        viewport.tilesize,
+                                                        viewport.tilesize
+                                                    );
                                                     tileDone[tileKey] = true;
                                                 } else {
                                                     if (map.renderer.tiles[t][tileKey] && map.renderer.tiles[t][tileKey].complete) {
-                                                        try {
-                                                            map.renderer.context.drawImage(map.renderer.tiles[t][tileKey], xoff, yoff, viewport.tilesize, viewport.tilesize);
+                                                        // draw tile
+                                                        if (map.renderer.drawImage(
+                                                                map.renderer.tiles[t][tileKey],
+                                                                "#dddddd",
+                                                                xoff,
+                                                                yoff,
+                                                                viewport.tilesize,
+                                                                viewport.tilesize
+                                                            )) {
                                                             map.renderer.tiles[t][tileKey].lastDrawnId = id;
-                                                        } catch (e) {
-                                                            map.renderer.context.fillStyle = "#dddddd";
-                                                            map.renderer.context.fillRect(xoff, yoff, viewport.tilesize, viewport.tilesize);
                                                         }
                                                         tileDone[tileKey] = true;
                                                     } else {
-                                                        tileAboveX = $.Math.floor(x / 2);
-                                                        tileAboveY = $.Math.floor(y / 2);
-                                                        tileAboveZ = viewport.zi - 1;
-                                                        tilePartOffsetX = $.Math.ceil(x - tileAboveX * 2);
-                                                        tilePartOffsetY = $.Math.ceil(y - tileAboveY * 2);
-                                                        tileKeyAbove = encodeIndex(tileAboveX, tileAboveY, tileAboveZ);
-                                                        if (preload && !map.renderer.tiles[t][tileKeyAbove]) {
-                                                            map.renderer.tiles[t][tileKeyAbove] = new $.Image();
-                                                            map.renderer.tiles[t][tileKeyAbove].src = tileprovider(tileAboveX, tileAboveY, tileAboveZ, map.renderer.tiles[t][tileKeyAbove]);
-                                                            map.renderer.tiles[t][tileKeyAbove].onload = map.renderer.refresh;
-                                                            map.renderer.tiles[t][tileKeyAbove].onerror = null;
-                                                        }
-                                                        if (!tileDone[tileKey] && map.renderer.tiles[t][tileKeyAbove] && map.renderer.tiles[t][tileKeyAbove].lastDrawnId) {
-                                                            tileOffsetX = xoff - tilePartOffsetX * viewport.tilesize;
-                                                            tileOffsetY = yoff - tilePartOffsetY * viewport.tilesize;
-                                                            try {
-                                                                map.renderer.context.drawImage(
-                                                                    map.renderer.tiles[t][tileKeyAbove],
-                                                                    tilePartOffsetX * map.renderer.tilesize / 2,
-                                                                    tilePartOffsetY * map.renderer.tilesize / 2,
-                                                                    map.renderer.tilesize / 2,
-                                                                    map.renderer.tilesize / 2,
-                                                                    tileOffsetX + viewport.tilesize * tilePartOffsetX,
-                                                                    tileOffsetY + viewport.tilesize * tilePartOffsetY,
-                                                                    viewport.tilesize,
-                                                                    viewport.tilesize
-                                                                );
-                                                                map.renderer.tiles[t][tileKeyAbove].lastDrawnId = id;
-                                                            } catch (e_above) {
-                                                                map.renderer.context.fillStyle = "#dddddd";
-                                                                map.renderer.context.fillRect(tileOffsetX, tileOffsetY, $.Math.ceil(2 * viewport.tilesize), $.Math.ceil(2 * viewport.tilesize));
-                                                            }
-                                                            tileDone[tileKey] = true;
-                                                        } else {
-                                                            if (!tileDone[tileKey]) {
-                                                                map.renderer.context.fillStyle = "#dddddd";
-                                                                map.renderer.context.fillRect(xoff, yoff, viewport.tilesize, viewport.tilesize);
+                                                        tileLoadingCue.push({id: tileKey, x: x, y: y, z: viewport.zi});
+                                                        // try tile preview with tile from lower z level
+                                                        for (tileAboveZ = viewport.zi - 1; tileAboveZ > map.zMin; tileAboveZ = tileAboveZ - 1) {
+                                                            tileAboveX = $.Math.floor(x / 2);
+                                                            tileAboveY = $.Math.floor(y / 2);
+                                                            tileKeyAbove = encodeIndex(tileAboveX, tileAboveY, tileAboveZ);
+                                                            if (!tileDone[tileKey] && map.renderer.tiles[t][tileKeyAbove] && map.renderer.tiles[t][tileKeyAbove].complete) {
+                                                                // we have a tile from previous z level loaded, let draw it
+                                                                tilePartOffsetX = Math.floor(x - tileAboveX * 2);
+                                                                tilePartOffsetY = Math.floor(y - tileAboveY * 2);
+                                                                tileOffsetX = Math.floor(xoff - tilePartOffsetX * viewport.tilesize);
+                                                                tileOffsetY = Math.floor(yoff - tilePartOffsetY * viewport.tilesize);
+                                                                try {
+                                                                    map.renderer.context.drawImage(
+                                                                        map.renderer.tiles[t][tileKeyAbove],
+                                                                        Math.floor(tilePartOffsetX * map.renderer.tilesize / 2),
+                                                                        Math.floor(tilePartOffsetY * map.renderer.tilesize / 2),
+                                                                        Math.ceil(map.renderer.tilesize / 2),
+                                                                        Math.ceil(map.renderer.tilesize / 2),
+                                                                        Math.floor(tileOffsetX + viewport.tilesize * tilePartOffsetX),
+                                                                        Math.floor(tileOffsetY + viewport.tilesize * tilePartOffsetY),
+                                                                        Math.ceil(viewport.tilesize),
+                                                                        Math.ceil(viewport.tilesize)
+                                                                    );
+                                                                    map.renderer.tiles[t][tileKeyAbove].lastDrawnId = id;
+                                                                } catch (e_above) {
+                                                                    map.renderer.blank(
+                                                                        "#dddddd",
+                                                                        tileOffsetX,
+                                                                        tileOffsetY,
+                                                                        Math.ceil(2 * viewport.tilesize),
+                                                                        Math.ceil(2 * viewport.tilesize)
+                                                                    );
+                                                                }
                                                                 tileDone[tileKey] = true;
                                                             }
                                                         }
-                                                        if (!map.renderer.tiles[t][tileKey]) {
-                                                            map.renderer.tiles[t][tileKey] = new $.Image();
-                                                            map.renderer.tiles[t][tileKey].lastDrawnId = 0;
-                                                            map.renderer.tilecount = map.renderer.tilecount + 1;
-                                                            map.renderer.tiles[t][tileKey].src = tileprovider(x, y, viewport.zi, map.renderer.tiles[t][tileKey]);
-                                                            map.renderer.tiles[t][tileKey].onload = map.renderer.refresh;
-                                                            map.renderer.tiles[t][tileKey].onerror = null;
+                                                        if (tileDone[tileKey] === false) {
+                                                            map.renderer.blank(
+                                                                "#dddddd",
+                                                                xoff,
+                                                                yoff,
+                                                                viewport.tilesize,
+                                                                viewport.tilesize
+                                                            );
+                                                            tileDone[tileKey] = true;
                                                         }
                                                     }
                                                 }
                                             }
                                         }
+                                        tileLoadingCueLength = tileLoadingCue.length;
+                                        for (tileLoadingKey = 0; tileLoadingKey < tileLoadingCueLength; tileLoadingKey = tileLoadingKey + 1) {
+                                            tileLoading = tileLoadingCue[tileLoadingKey];
+                                            // get tile above
+                                            tileAboveX = $.Math.floor(tileLoading.x / 2);
+                                            tileAboveY = $.Math.floor(tileLoading.y / 2);
+                                            tileAboveZ = tileLoading.z - 1;
+                                            tileKeyAbove = encodeIndex(tileAboveX, tileAboveY, tileAboveZ);
+                                            if (!map.renderer.tiles[t][tileKeyAbove]) {
+                                                tileLoadingCue.push({id: tileKeyAbove, x: tileAboveX, y: tileAboveY, z: tileAboveZ});
+                                            }
+                                        }
+                                        for (tileLoadingKey = 0; tileLoadingKey < tileLoadingCue.length; tileLoadingKey = tileLoadingKey + 1) {
+                                            tileLoading = tileLoadingCue[tileLoadingKey];
+                                            if (!map.renderer.tiles[t][tileLoading.id]) {
+                                                // request tile and dispatch refresh
+                                                map.renderer.tiles[t][tileLoading.id] = new $.Image();
+                                                map.renderer.tiles[t][tileLoading.id].lastDrawnId = 0;
+                                                map.renderer.tilecount = map.renderer.tilecount + 1;
+                                                map.renderer.tiles[t][tileLoading.id].src = tileprovider(tileLoading.x, tileLoading.y, tileLoading.z, map.renderer.tiles[t][tileLoading.id]);
+                                                map.renderer.tiles[t][tileLoading.id].onload = map.renderer.refresh;
+                                                map.renderer.tiles[t][tileLoading.id].onerror = null;
+
+                                            }
+                                        }
+
                                     }
                                 }
                             }
@@ -544,15 +622,15 @@
                     ],
                     refresh: function () {
                         var now = function () {
-                            return (new $.Date()).getTime();
-                        };
-                        var refreshBeforeFPS;
-                        if (map.renderer.refreshLastStart){
-                        	refreshBeforeFPS = 1000 / map.renderer.refreshFPS - (now() - map.renderer.refreshLastStart);
-            	            if (refreshBeforeFPS > 0) { /* too early - postpone refresh */
-//        	                    $.setTimeout(map.renderer.refresh, refreshBeforeFPS);
-    	                        return;
-	                        }
+                                return (new $.Date()).getTime();
+                            },
+                            refreshBeforeFPS;
+                        if (map.renderer.refreshLastStart) {
+                            refreshBeforeFPS = 1000 / map.renderer.refreshFPS - (now() - map.renderer.refreshLastStart);
+                            if (refreshBeforeFPS > 0) { /* too early - postpone refresh */
+//                              $.setTimeout(map.renderer.refresh, refreshBeforeFPS);
+                                return;
+                            }
                         }
                         map.renderer.refreshLastStart = now();
                         map.renderer.refreshCounter = map.renderer.refreshCounter + 1;
@@ -569,6 +647,7 @@
                         for (i = 0; i < map.renderer.refreshListeners.length; i = i + 1) {
                             map.renderer.refreshListeners[i]();
                         }
+                        return false;
                     },
                     /* garbage collector, purges tiles if more than 500 are loaded and tile is more than 100 refresh cycles old */
                     garbage: function () {
@@ -610,13 +689,13 @@
                     viewport.width = map.renderer.canvas.width;
                     viewport.height = map.renderer.canvas.height;
                     viewport.sz = map.renderer.tilesize * viewport.zp;
-                    viewport.tilesize = $.Math.ceil(map.renderer.tilesize * viewport.zf);
+                    viewport.tilesize = (map.renderer.tilesize * viewport.zf);
                     viewport.xMin = Math.floor(map.pos.x - viewport.w / 2);
                     viewport.yMin = Math.floor(map.pos.y - viewport.h / 2);
                     viewport.xMax = Math.ceil(map.pos.x + viewport.w / 2);
                     viewport.yMax = Math.ceil(map.pos.y + viewport.h / 2);
-                    viewport.offsetX = Math.round((viewport.zf - 1) * (viewport.xMax - viewport.xMin) / viewport.zp / 2);
-                    viewport.offsetY = Math.round((viewport.zf - 1) * (viewport.yMax - viewport.yMin) / viewport.zp / 2);
+                    viewport.offsetX = Math.floor((viewport.zf - 1) * (viewport.xMax - viewport.xMin) / viewport.zp / 2);
+                    viewport.offsetY = Math.floor((viewport.zf - 1) * (viewport.yMax - viewport.yMin) / viewport.zp / 2);
                     map.cache.viewport = viewport;
                     return map.cache.viewport;
                 },
@@ -635,7 +714,7 @@
                                 x = map.pos.maxX - viewport.w / 2;
                             }
                         }
-                        map.pos.x = x;
+                        map.pos.x = Math.round(x);
                     },
                     setY: function (y) {
                         var viewport, yMin, yMax;
@@ -649,7 +728,7 @@
                                 y = map.pos.maxY - viewport.h / 2;
                             }
                         }
-                        map.pos.y = y;
+                        map.pos.y = Math.round(y);
                     },
                     setZ: function (z, options) {
                         var animated;
@@ -790,8 +869,9 @@
                         now: function () {
                             return (new Date()).getTime();
                         },
-                        interval: 10,
-                        duration: 400,
+                        timeoutId: 0,
+                        interval: 25,
+                        duration: 750,
                         descriptor: {
                             time: 0,
                             from: {},
@@ -831,7 +911,7 @@
                             } else {
                                 map.pos.animation.descriptor.to.z = map.pos.z;
                             }
-                            $.setTimeout(map.pos.animation.step, map.pos.animation.interval);
+                            map.pos.animation.timeoutId = $.setTimeout(map.pos.animation.step, map.pos.animation.interval);
                         },
                         step: function () {
                             var progressXY, progressZ, destX, destY, destZ;
@@ -867,7 +947,13 @@
                                 }, {
                                     animationStep: true
                                 });
-                                $.setTimeout(map.pos.animation.step, map.pos.animation.interval);
+                                map.pos.animation.timeoutId = $.setTimeout(map.pos.animation.step, map.pos.animation.interval);
+                            }
+                        },
+                        stop: function () {
+                            if (map.pos.animation.timeoutId) {
+                                $.clearTimeout(map.pos.animation.timeoutId);
+                                map.pos.animation.timeoutId = 0;
                             }
                         }
                     }
