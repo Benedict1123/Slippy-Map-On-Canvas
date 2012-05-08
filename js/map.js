@@ -556,7 +556,7 @@
                                                 }
                                             }
                                         }
-//                                        tileLoadingCue = map.renderer.sortObject(tileLoadingCue);
+                                        tileLoadingCue = map.renderer.sortObject(tileLoadingCue);
                                         for (tileLoadingKey in tileLoadingCue) {
                                             if (tileLoadingCue.hasOwnProperty(tileLoadingKey)) {
                                                 tileLoading = tileLoadingCue[tileLoadingKey];
@@ -877,7 +877,8 @@
                                 map.zoomed(options);
                             }
                         } else {
-                            map.pos.animation.start(coords.x, coords.y, false);
+//                        	map.pos.animation.duration = options.duration || 750;
+                            map.pos.animation.start(coords.x, coords.y, coords.z);
                         }
                     },
                     move: function (dx, dy, options) {
@@ -1062,7 +1063,12 @@
                     if (typeof coords !== 'object') {
                         return map.pos.coords();
                     }
-                    map.pos.coords(parseFloat(coords.lon), parseFloat(coords.lat), parseFloat(coords.zoom), options);
+                    map.pos.coords({
+                    	lon: parseFloat(coords.lon),
+                    	lat: parseFloat(coords.lat),
+                    	zoom: parseFloat(coords.zoom)}, 
+                    	options
+                    );
                     map.renderer.refresh();
                     return this;
                 },
