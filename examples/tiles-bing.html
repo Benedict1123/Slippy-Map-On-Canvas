@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html manifest="map.manifest">
+	<head>
+		<meta charset="utf-8">
+		<title>Slippy Map on Canvas (HTML5) | bing tiles</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<link rel="apple-touch-icon-precomposed" href="images/touch-icon.png" />
+		<link href="../css/map.css" rel="stylesheet" type="text/css" media="all" />
+		<link href="../css/ui.css" rel="stylesheet" type="text/css" media="all" />
+		<script src="../js/map.js" type="text/javascript"></script>
+		<script type="text/javascript">
+			document.addEventListener('DOMContentLoaded', function(){
+				var map =  slippymap(
+					{	
+						tileprovider : function(x,y,z){
+						// http://msdn.microsoft.com/en-us/library/bb259689.aspx
+											var key = [];
+											for (var i = z; i > 0; i--) {
+												var digit = 0;
+												var mask = 1 << (i - 1);
+												if ((x & mask) != 0)
+												{
+													digit++;
+												}
+												if ((y & mask) != 0)
+												{
+													digit++;
+													digit++;
+												}
+												key.push(digit);
+											}
+											return "http://ecn.dynamic.t3.tiles.virtualearth.net/comp/CompositionHandler/"+key.join("")+"?mkt=de-de&it=G,VE,BX,L,LA&shading=hill&n=z";
+										}
+						}
+					).init();
+				document.querySelectorAll("#buttons .zoomin")[0].addEventListener('click', map.zoomIn, false);
+				document.querySelectorAll("#buttons .zoomout")[0].addEventListener('click', map.zoomOut, false);
+				document.querySelectorAll("#buttons .info")[0].addEventListener('click', function(){
+					map.coords({zoom: 17, lon: -122.141404, lat: 47.658552}, {animated: true});
+					return false;
+				}, false);
+			}, false);
+		</script>	
+	</head>
+	<body>
+		<canvas id="map">
+			Your  browser doesn't support canvas elements.			
+		</canvas>
+		<ul id="buttons">
+			<li><a class="zoomin">+</a></li>
+			<li><a class="zoomout">-</a></li>
+			<li><a class="info">i</a></li>
+		</ul>
+	</body>
+</html>
