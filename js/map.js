@@ -61,16 +61,14 @@
                 zoomedListeners: [],
                 movedListeners: [],
                 moveEndListeners: [],
-
+                limitFPS: false,
                 init: function () {
-                    var viewportWidth, viewportHeight, coords;
+                    var coords;
                     if ($.document.getElementById(options.div)) {
-                        viewportWidth = $.innerWidth;
-                        viewportHeight = $.innerHeight;
                         map.renderer.canvas = $.document.getElementById(options.div);
                         if (options.fullscreen === true) {
-                            map.renderer.canvas.width = viewportWidth;
-                            map.renderer.canvas.height = viewportHeight;
+                            map.renderer.canvas.width = $.innerWidth;
+                            map.renderer.canvas.height = $.innerHeight;
                         }
                         map.renderer.context = map.renderer.canvas.getContext("2d");
                         map.renderer.sortLayers();
@@ -122,6 +120,11 @@
                     dragging: false,
                     lastTouchEvent: {},
                     lastTouchEventBeforeLast: {},
+                    preventDefault: function (event) {
+                        if (typeof event.preventDefault !== 'undefined') {
+                            event.preventDefault();
+                        }
+                    },
                     mouseDown: function (event) {
                         var x, y;
                         map.pos.animation.stop();
@@ -135,9 +138,10 @@
                         }
                         map.events.lastMouseX = x;
                         map.events.lastMouseY = y;
-                        if (event.preventDefault) {
-                            event.preventDefault();
-                        }
+                        map.events.momentumX = 0;
+                        map.events.momentumY = 0;
+                        map.events.preventDefault(event);
+                        return true;
                     },
                     mouseMove: function (event) {
                         var x, y, dX, dY;
@@ -158,11 +162,10 @@
                         }
                         map.events.lastMouseX = x;
                         map.events.lastMouseY = y;
-                        if (event.preventDefault) {
-                            event.preventDefault();
-                        }
+                        map.events.preventDefault(event);
+                        return true;
                     },
-                    mouseUp: function () {
+                    mouseUp: function (event) {
                         if (map.events.dragging && map.scrollMomentum && (map.events.momentumX !== 0 || map.events.momentumY !== 0)) {
                             map.events.dragging = false;
                             map.pos.move(-map.events.momentumX * map.pow(2, map.zMax - map.pos.z), -map.events.momentumY * map.pow(2, map.zMax - map.pos.z), {animated: true});
@@ -170,12 +173,14 @@
                             map.events.dragging = false;
                             map.moveEnded();
                         }
-                        map.events.momentumX = 0;
-                        map.events.momentumY = 0;
+                        map.events.preventDefault(event);
+                        return true;
                     },
-                    mouseOut: function () {
+                    mouseOut: function (event) {
                         map.events.dragging = false;
                         map.moveEnded();
+                        map.events.preventDefault(event);
+                        return true;
                     },
                     mouseWheel: function (event) {
                         var delta = 0;
@@ -202,9 +207,8 @@
                                 mouseWheel: true
                             });
                         }
-                        if (event.preventDefault) {
-                            event.preventDefault();
-                        }
+                        map.events.preventDefault(event);
+                        return true;
                     },
                     doubleClick: function (event) {
                         var x, y, dX, dY;
@@ -226,9 +230,8 @@
                             round: true,
                             animated: true
                         });
-                        if (event.preventDefault) {
-                            event.preventDefault();
-                        }
+                        map.events.preventDefault(event);
+                        return true;
                     },
                     /* maps touch events to mouse events */
                     touchHandler: function (event) {
@@ -268,10 +271,11 @@
                             first.target.dispatchEvent(simulatedEvent);
                             map.events.lastTouchEventBeforeLast = map.events.lastTouchEvent;
                             map.events.lastTouchEvent = event;
+                            map.events.preventDefault(event);
+                            return true;
                         }
-                        if (event.preventDefault) {
-                            event.preventDefault();
-                        }
+                        map.events.preventDefault(event);
+                        return false;
                     },
                     /* minimal pinch support */
                     gestureHandler: function (event) {
@@ -296,9 +300,8 @@
                                 return true;
                             }
                         }
-                        if (event.preventDefault) {
-                            event.preventDefault();
-                        }
+                        map.events.preventDefault(event);
+                        return false;
                     },
                     /* attaches events to map + window */
                     init: function () {
@@ -332,41 +335,66 @@
                     refreshFPS: 50,
                     refreshListeners: {},
                     blank : function (color, x, y, width, height) {
-                        x = $.Math.floor(x);
-                        y = $.Math.floor(y);
-                        width = $.Math.ceil(width);
-                        height = $.Math.ceil(height);
                         map.renderer.context.fillStyle = color;
                         map.renderer.context.fillRect(x, y, width, height);
                     },
-                    drawImage : function (image, fallbackColor, x, y, width, height) {
-                        x = $.Math.floor(x);
-                        y = $.Math.floor(y);
-                        width = $.Math.ceil(width);
-                        height = $.Math.ceil(height);
+                    drawImage : function (image, fallbackColor, sx, sy, sw, sh, dx, dy, dw, dh) {
                         try {
                             map.renderer.context.drawImage(
                                 image,
-                                x,
-                                y,
-                                width,
-                                height
+                                sx,
+                                sy,
+                                sw,
+                                sh,
+                                dx,
+                                dy,
+                                dw,
+                                dh
                             );
                             return true;
                         } catch (e) {
                             map.renderer.blank(
                                 fallbackColor,
-                                x,
-                                y,
-                                width,
-                                height
+                                dx,
+                                dy,
+                                dw,
+                                dh
                             );
                             return false;
                         }
                     },
+                    loadImage : function (id, x, y, z, t, tileprovider) {
+                        if (typeof map.renderer.tiles[t] === 'undefined') {
+                            map.renderer.tiles[t] = [];
+                        }
+                        map.renderer.tiles[t][id] = new $.Image();
+                        map.renderer.tiles[t][id].lastDrawnId = 0;
+                        map.renderer.tilecount = map.renderer.tilecount + 1;
+                        map.renderer.tiles[t][id].src = tileprovider(x, y, z, id);
+                        map.renderer.tiles[t][id].onload = map.renderer.refresh;
+                        map.renderer.tiles[t][id].onerror = function () {
+                            this.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+                            this.onload = function () {};
+                        };
+                    },
                     addLayer: function (layer) {
                         map.renderer.layers.push(layer);
                         map.renderer.sortLayers();
+                    },
+                    sortObject: function (o) {
+                        var sorted = {},
+                            key,
+                            a = [];
+                        for (key in o) {
+                            if (o.hasOwnProperty(key)) {
+                                a.push(key);
+                            }
+                        }
+                        a.sort();
+                        for (key = 0; key < a.length; key = key + 1) {
+                            sorted[a[key]] = o[a[key]];
+                        }
+                        return sorted;
                     },
                     sortLayers: function () {
                         function sortZIndex(a, b) {
@@ -389,7 +417,7 @@
 
                             callback: function (id, viewport, alpha) {
                                 map.renderer.context.globalAlpha = alpha;
-                                map.renderer.blank("#ff0000", 0, 0, map.renderer.canvas.width, map.renderer.canvas.height);
+                                map.renderer.blank("#dddddd", 0, 0, viewport.w, viewport.h);
                             }
                         },
                         { /* repaint canvas, load missing images */
@@ -404,17 +432,16 @@
                                 var tileprovider, tileLayers, maxTileNumber, tileDone, preload,
                                     t, x, y, xoff, yoff, tileKey,
                                     tileAboveX, tileAboveY, tileAboveZ, tileKeyAbove,
-                                    tilePartOffsetX, tilePartOffsetY,
-                                    tileOffsetX, tileOffsetY,
+                                    tilePartOffsetX, tilePartOffsetY, tilePartSize,
+                                    tileZdiff,
                                     encodeIndex,
                                     tileLoadingCue = [],
-                                    tileLoading, tileLoadingKey, tileLoadingCueLength;
+                                    tileLoading, tileLoadingKey;
 
                                 encodeIndex = function (x, y, z) {
                                     return x + "-" + y + "-" + z;
                                 };
                                 maxTileNumber = map.pow(2, viewport.zi) - 1;
-                                tileDone = [];
                                 preload = map.preloadMargin;
                                 if (typeof map.tileprovider === 'function') {
                                     tileLayers = {
@@ -434,9 +461,9 @@
                                         tileDone = [];
                                         for (x = $.Math.floor(viewport.xMin / viewport.sz) - preload; x < $.Math.ceil(viewport.xMax / viewport.sz) + preload; x = x + 1) {
                                             tileDone[x] = [];
+                                            xoff = (((x * viewport.sz - viewport.xMin) / viewport.zp) * viewport.zf) - viewport.offsetX;
                                             for (y = $.Math.floor(viewport.yMin / viewport.sz) - preload; y < $.Math.ceil(viewport.yMax / viewport.sz) + preload; y = y + 1) {
-                                                xoff = ((x * viewport.sz - viewport.xMin) / viewport.zp * viewport.zf) - viewport.offsetX;
-                                                yoff = ((y * viewport.sz - viewport.yMin) / viewport.zp * viewport.zf) - viewport.offsetY;
+                                                yoff = (((y * viewport.sz - viewport.yMin) / viewport.zp) * viewport.zf) - viewport.offsetY;
                                                 tileKey = encodeIndex(x, y, viewport.zi);
                                                 tileDone[tileKey] = false;
                                                 if (x > maxTileNumber || y > maxTileNumber || x < 0 || y < 0) {
@@ -455,6 +482,10 @@
                                                         if (map.renderer.drawImage(
                                                                 map.renderer.tiles[t][tileKey],
                                                                 "#dddddd",
+                                                                0,
+                                                                0,
+                                                                map.renderer.tilesize,
+                                                                map.renderer.tilesize,
                                                                 xoff,
                                                                 yoff,
                                                                 viewport.tilesize,
@@ -464,41 +495,37 @@
                                                         }
                                                         tileDone[tileKey] = true;
                                                     } else {
-                                                        tileLoadingCue.push({id: tileKey, x: x, y: y, z: viewport.zi});
+                                                        if (typeof map.renderer.tiles[t][tileKey] === 'undefined' &&
+                                                                typeof tileLoadingCue[tileKey] === 'undefined') {
+                                                            tileLoadingCue[tileKey] = {id: tileKey, x: x, y: y, z: viewport.zi};
+                                                        }
                                                         // try tile preview with tile from lower z level
-                                                        for (tileAboveZ = viewport.zi - 1; tileAboveZ > map.zMin; tileAboveZ = tileAboveZ - 1) {
-                                                            tileAboveX = $.Math.floor(x / 2);
-                                                            tileAboveY = $.Math.floor(y / 2);
+                                                        for (tileAboveZ = viewport.zi - 1; !tileDone[tileKey] && (tileAboveZ > map.zMin); tileAboveZ = tileAboveZ - 1) {
+                                                            tileZdiff = viewport.zi - tileAboveZ;
+                                                            tileAboveX = $.Math.floor(x / map.pow(2, tileZdiff));
+                                                            tileAboveY = $.Math.floor(y / map.pow(2, tileZdiff));
                                                             tileKeyAbove = encodeIndex(tileAboveX, tileAboveY, tileAboveZ);
                                                             if (!tileDone[tileKey] && map.renderer.tiles[t][tileKeyAbove] && map.renderer.tiles[t][tileKeyAbove].complete) {
                                                                 // we have a tile from previous z level loaded, let draw it
-                                                                tilePartOffsetX = Math.floor(x - tileAboveX * 2);
-                                                                tilePartOffsetY = Math.floor(y - tileAboveY * 2);
-                                                                tileOffsetX = Math.floor(xoff - tilePartOffsetX * viewport.tilesize);
-                                                                tileOffsetY = Math.floor(yoff - tilePartOffsetY * viewport.tilesize);
-                                                                try {
-                                                                    map.renderer.context.drawImage(
-                                                                        map.renderer.tiles[t][tileKeyAbove],
-                                                                        Math.floor(tilePartOffsetX * map.renderer.tilesize / 2),
-                                                                        Math.floor(tilePartOffsetY * map.renderer.tilesize / 2),
-                                                                        Math.ceil(map.renderer.tilesize / 2),
-                                                                        Math.ceil(map.renderer.tilesize / 2),
-                                                                        Math.floor(tileOffsetX + viewport.tilesize * tilePartOffsetX),
-                                                                        Math.floor(tileOffsetY + viewport.tilesize * tilePartOffsetY),
-                                                                        Math.ceil(viewport.tilesize),
-                                                                        Math.ceil(viewport.tilesize)
-                                                                    );
-                                                                    map.renderer.tiles[t][tileKeyAbove].lastDrawnId = id;
-                                                                } catch (e_above) {
-                                                                    map.renderer.blank(
-                                                                        "#dddddd",
-                                                                        tileOffsetX,
-                                                                        tileOffsetY,
-                                                                        Math.ceil(2 * viewport.tilesize),
-                                                                        Math.ceil(2 * viewport.tilesize)
-                                                                    );
-                                                                }
+                                                                tilePartOffsetX = (x - tileAboveX * map.pow(2, tileZdiff));
+                                                                tilePartOffsetY = (y - tileAboveY * map.pow(2, tileZdiff));
+                                                                tilePartSize = (map.renderer.tilesize / map.pow(2, tileZdiff));
+																if (map.renderer.drawImage(
+																		map.renderer.tiles[t][tileKeyAbove],
+																		"#dddddd",
+																		tilePartOffsetX * tilePartSize,
+																		tilePartOffsetY * tilePartSize,
+																		tilePartSize,
+																		tilePartSize,
+																		xoff,
+																		yoff,
+																		viewport.tilesize,
+																		viewport.tilesize
+																	)) {
+																	map.renderer.tiles[t][tileKeyAbove].lastDrawnId = id;
+																}
                                                                 tileDone[tileKey] = true;
+                                                                break;
                                                             }
                                                         }
                                                         if (tileDone[tileKey] === false) {
@@ -515,29 +542,35 @@
                                                 }
                                             }
                                         }
-                                        tileLoadingCueLength = tileLoadingCue.length;
-                                        for (tileLoadingKey = 0; tileLoadingKey < tileLoadingCueLength; tileLoadingKey = tileLoadingKey + 1) {
-                                            tileLoading = tileLoadingCue[tileLoadingKey];
-                                            // get tile above
-                                            tileAboveX = $.Math.floor(tileLoading.x / 2);
-                                            tileAboveY = $.Math.floor(tileLoading.y / 2);
-                                            tileAboveZ = tileLoading.z - 1;
-                                            tileKeyAbove = encodeIndex(tileAboveX, tileAboveY, tileAboveZ);
-                                            if (!map.renderer.tiles[t][tileKeyAbove]) {
-                                                tileLoadingCue.push({id: tileKeyAbove, x: tileAboveX, y: tileAboveY, z: tileAboveZ});
+                                        for (tileLoadingKey in tileLoadingCue) {
+                                            if (tileLoadingCue.hasOwnProperty(tileLoadingKey)) {
+                                                tileLoading = tileLoadingCue[tileLoadingKey];
+                                                // get tile above
+                                                tileAboveX = $.Math.floor(tileLoading.x / 2);
+                                                tileAboveY = $.Math.floor(tileLoading.y / 2);
+                                                tileAboveZ = tileLoading.z - 1;
+                                                tileKeyAbove = encodeIndex(tileAboveX, tileAboveY, tileAboveZ);
+                                                if (typeof map.renderer.tiles[t][tileKeyAbove] === 'undefined' &&
+                                                        typeof tileLoadingCue[tileKeyAbove] === 'undefined') {
+                                                    tileLoadingCue[tileKeyAbove] = {id: tileKeyAbove, x: tileAboveX, y: tileAboveY, z: tileAboveZ};
+                                                }
                                             }
                                         }
-                                        for (tileLoadingKey = 0; tileLoadingKey < tileLoadingCue.length; tileLoadingKey = tileLoadingKey + 1) {
-                                            tileLoading = tileLoadingCue[tileLoadingKey];
-                                            if (!map.renderer.tiles[t][tileLoading.id]) {
-                                                // request tile and dispatch refresh
-                                                map.renderer.tiles[t][tileLoading.id] = new $.Image();
-                                                map.renderer.tiles[t][tileLoading.id].lastDrawnId = 0;
-                                                map.renderer.tilecount = map.renderer.tilecount + 1;
-                                                map.renderer.tiles[t][tileLoading.id].src = tileprovider(tileLoading.x, tileLoading.y, tileLoading.z, map.renderer.tiles[t][tileLoading.id]);
-                                                map.renderer.tiles[t][tileLoading.id].onload = map.renderer.refresh;
-                                                map.renderer.tiles[t][tileLoading.id].onerror = null;
-
+//                                        tileLoadingCue = map.renderer.sortObject(tileLoadingCue);
+                                        for (tileLoadingKey in tileLoadingCue) {
+                                            if (tileLoadingCue.hasOwnProperty(tileLoadingKey)) {
+                                                tileLoading = tileLoadingCue[tileLoadingKey];
+                                                if (!map.renderer.tiles[t][tileLoading.id]) {
+                                                    // request tile and dispatch refresh
+                                                    map.renderer.loadImage(
+                                                        tileLoading.id,
+                                                        tileLoading.x,
+                                                        tileLoading.y,
+                                                        tileLoading.z,
+                                                        t,
+                                                        tileprovider
+                                                    );
+                                                }
                                             }
                                         }
 
@@ -563,7 +596,7 @@
                                         if (map.markers[marker].img && map.markers[marker].img.complete) {
                                             x = $.Math.round((map.pos.lon2posX(map.markers[marker].lon) - viewport.xMin) / viewport.zp * viewport.zf) + map.markers[marker].offsetX - viewport.offsetX;
                                             y = $.Math.round((map.pos.lat2posY(map.markers[marker].lat) - viewport.yMin) / viewport.zp * viewport.zf) + map.markers[marker].offsetY - viewport.offsetY;
-                                            if (x > -50 && x < map.renderer.canvas.width + 50 && y > -50 && y < map.renderer.canvas.height + 50) {
+                                            if (x > -50 && x < viewport.w + 50 && y > -50 && y < viewport.h + 50) {
                                                 try {
                                                     map.renderer.context.globalAlpha = map.markers[marker].alpha || alpha;
                                                     map.renderer.context.drawImage(map.markers[marker].img, x, y);
@@ -624,19 +657,23 @@
                         var now = function () {
                                 return (new $.Date()).getTime();
                             },
-                            refreshBeforeFPS;
-                        if (map.renderer.refreshLastStart) {
+                            refreshBeforeFPS,
+                            refreshId,
+                            viewport,
+                            ll,
+                            i;
+
+                        if (map.limitFPS && map.renderer.refreshLastStart) {
                             refreshBeforeFPS = 1000 / map.renderer.refreshFPS - (now() - map.renderer.refreshLastStart);
                             if (refreshBeforeFPS > 0) { /* too early - postpone refresh */
-//                              $.setTimeout(map.renderer.refresh, refreshBeforeFPS);
+                                $.setTimeout(map.renderer.refresh, refreshBeforeFPS);
                                 return;
                             }
                         }
                         map.renderer.refreshLastStart = now();
                         map.renderer.refreshCounter = map.renderer.refreshCounter + 1;
-                        var refreshId = map.renderer.refreshCounter - 1;
-                        var viewport = map.viewport();
-                        var ll, i;
+                        refreshId = map.renderer.refreshCounter - 1;
+                        viewport = map.viewport();
                         for (ll in map.renderer.layers) {
                             if (map.renderer.layers.hasOwnProperty(ll)) {
                                 if (map.renderer.layers[ll].visible && map.renderer.layers[ll].update()) {
@@ -678,24 +715,27 @@
                         return map.cache.viewport;
                     }
                     var viewport = {};
+
+                    viewport.x = map.pos.x;
+                    viewport.y = map.pos.y;
+                    viewport.width =  map.renderer.canvas.width;
+                    viewport.height =  map.renderer.canvas.height;
+                    viewport.zoom = map.pos.z;
+
                     viewport.zi = parseInt(map.pos.z, 10);
                     viewport.zf = map.useFractionalZoom ? (1 + map.pos.z - viewport.zi) : 1;
                     viewport.zp = map.pow(2, map.zMax - viewport.zi);
-                    viewport.w = map.renderer.canvas.width * viewport.zp;
-                    viewport.h = map.renderer.canvas.height * viewport.zp;
-                    viewport.x = map.pos.x;
-                    viewport.y = map.pos.y;
-                    viewport.zoom = map.pos.z;
-                    viewport.width = map.renderer.canvas.width;
-                    viewport.height = map.renderer.canvas.height;
+
+                    viewport.w = (map.renderer.canvas.width - map.renderer.canvas.width % 2) * viewport.zp;
+                    viewport.h = (map.renderer.canvas.height - map.renderer.canvas.height % 2) * viewport.zp;
                     viewport.sz = map.renderer.tilesize * viewport.zp;
                     viewport.tilesize = (map.renderer.tilesize * viewport.zf);
-                    viewport.xMin = Math.floor(map.pos.x - viewport.w / 2);
-                    viewport.yMin = Math.floor(map.pos.y - viewport.h / 2);
-                    viewport.xMax = Math.ceil(map.pos.x + viewport.w / 2);
-                    viewport.yMax = Math.ceil(map.pos.y + viewport.h / 2);
-                    viewport.offsetX = Math.floor((viewport.zf - 1) * (viewport.xMax - viewport.xMin) / viewport.zp / 2);
-                    viewport.offsetY = Math.floor((viewport.zf - 1) * (viewport.yMax - viewport.yMin) / viewport.zp / 2);
+                    viewport.xMin = (map.pos.x - viewport.w / 2);
+                    viewport.yMin = (map.pos.y - viewport.h / 2);
+                    viewport.xMax = (map.pos.x + viewport.w / 2);
+                    viewport.yMax = (map.pos.y + viewport.h / 2);
+                    viewport.offsetX = ((viewport.zf - 1) * (viewport.xMax - viewport.xMin) / viewport.zp / 2);
+                    viewport.offsetY = ((viewport.zf - 1) * (viewport.yMax - viewport.yMin) / viewport.zp / 2);
                     map.cache.viewport = viewport;
                     return map.cache.viewport;
                 },
@@ -808,6 +848,7 @@
                         map.pos.center(coords, options);
                     },
                     center: function (coords, options) {
+                        var animated, zoomChanged;
                         if (typeof coords === 'undefined') {
                             return {
                                 x: map.pos.x,
@@ -816,8 +857,8 @@
                             };
                         }
                         options = options || {};
-                        var animated = options.animated || false;
-                        var zoomChanged = false;
+                        animated = options.animated || false;
+                        zoomChanged = false;
                         if (!animated) {
                             map.pos.setX(coords.x);
                             map.pos.setY(coords.y);
@@ -870,7 +911,7 @@
                             return (new Date()).getTime();
                         },
                         timeoutId: 0,
-                        interval: 25,
+                        interval: 10,
                         duration: 750,
                         descriptor: {
                             time: 0,
@@ -1068,7 +1109,6 @@
                         map.pos.maxY = map.pos.lat2posY(parseFloat(bottom)); // NB pixel origin is top left
                         return this;
                     }
-
                     viewport =  map.viewport();
                     bounds = {};
                     bounds.left = map.pos.tile2lon((map.pos.x - viewport.w / 2) / map.renderer.tilesize, map.zMax);
@@ -1110,16 +1150,22 @@
                 zoomIn: function (event, options) {
                     map.pos.zoomIn(options);
                     if (event.preventDefault) {
-                        event.preventDefault();
+                        map.events.preventDefault(event);
                     }
-                    return this;
+                    if (typeof event !== 'undefined') {
+                        return this;
+                    }
+                    return false;
                 },
                 zoomOut: function (event, options) {
                     map.pos.zoomOut(options);
                     if (event.preventDefault) {
-                        event.preventDefault();
+                        map.events.preventDefault(event);
                     }
-                    return this;
+                    if (typeof event !== 'undefined') {
+                        return this;
+                    }
+                    return false;
                 },
                 tileCache: function (tiles) {
                     if (typeof tiles !== 'undefined') {
