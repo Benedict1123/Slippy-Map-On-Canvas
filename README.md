@@ -5,6 +5,8 @@ Implemenation of a slippy tiles map using <canvas> HTML5.
 
 It should run on most webkit browsers, eg. iOS, android, bada.
 
+Minified and gzipped ~ 6kB.
+
 Quickstart
 ----------
 
