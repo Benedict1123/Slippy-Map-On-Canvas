@@ -25,11 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
             htmlgroup = new joHTML(document.getElementById('templateMap').innerHTML)]);
 
             map.activate = function () {
-                canvas =  canvas || slippymap({zoom: state.z, lon: state.lon, lat: state.lat, markers: markers}).init();
-
-                document.getElementById("geo").removeAttribute("dispatched");
-                document.getElementById("geo").removeAttribute("error");
-                
+                canvas =  canvas || slippymap({zoom: state.z, lon: state.lon, lat: state.lat, markers: markers}).init();                
 				document.querySelectorAll("#buttons .zoomin")[0].addEventListener('click', canvas.zoomIn);
 				document.querySelectorAll("#buttons .zoomout")[0].addEventListener('click', canvas.zoomOut);
 				document.querySelectorAll("#buttons .gps")[0].addEventListener('click', function(){
