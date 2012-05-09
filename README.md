@@ -17,7 +17,7 @@ Quickstart
             <script src="js/map.js" type="text/javascript"></script>
             <script type="text/javascript">
                 document.addEventListener('DOMContentLoaded', function(){
-                    var map =  slippymap().init();
+                    var map =  slippymap({zoom: 5, lon: 13.41, lat: 52.5}).init();
                 }, false);
             </script>   
         </head>
