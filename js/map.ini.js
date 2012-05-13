@@ -6,8 +6,8 @@
             	updateDefered : false,
                 prefix: 'slippymap_' + map.div + '_',
                 init: function () {
-                    map.movedListeners.push(ini.update);
-                    map.zoomedListeners.push(ini.update);
+                    map.renderer.canvas.addEventListener('moveend', ini.update);
+                    map.renderer.canvas.addEventListener('zoomed', ini.update);
                     ini.set();
                 },
                 set: function () {

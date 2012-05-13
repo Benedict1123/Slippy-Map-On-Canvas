@@ -102,8 +102,8 @@
 				document.querySelectorAll("#buttons .zoomout")[0].addEventListener('click', map.zoomOut, false);
 				document.querySelectorAll("#buttons .info")[0].addEventListener('click', showCellTowers, false);
 				document.querySelectorAll("#map")[0].addEventListener('mousedown', map.infowindow.featureInfo, false);
-				map.addMovedListeners(map.infowindow.clearInfo);
-				map.addZoomedListeners(map.infowindow.clearInfo);
+				document.querySelectorAll("#map")[0].addEventListener('moved', map.infowindow.clearInfo);
+				document.querySelectorAll("#map")[0].addEventListener('zoomed', map.infowindow.clearInfo);
 			}, false);
 		</script>	
 	</head>
