@@ -143,9 +143,6 @@ Public Functions
         get: map.scrollMomentum();
         set: map.scrollMomentum(false);
 
-*   addMovedListeners(listener)
-*   addMoveEndListeners(listener)
-*   addZoomedListeners(listener)
 *   tileProvider(provider) - parameter function optional
 
         get: map.tileProvider();
@@ -183,3 +180,12 @@ Public Functions
             );
 
 *   refresh()
+
+Custom Events
+----------
+
+*   'update', fired by every update request
+*   'refresh', fired before each actual canvas refresh/ repaint
+*   'zoomed', fired if zoom changed
+*   'moved', fired if position changed
+*   'moveend', fired after animation
