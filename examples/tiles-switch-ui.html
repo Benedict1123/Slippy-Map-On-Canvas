@@ -156,15 +156,11 @@
 											}
 										},
 										{
-											id: "opencyclemap",
-											title: "OpenCycleMap",
+											id: "hikebike",
+											title: "hikebike",
 											copyright : "Data by OpenCycleMap",
 											provider : function (x, y, z) {
-												var rand = function (n) {
-													return Math.floor(Math.random() * n);
-												};
-												var sub = ["a", "b", "c"];
-												var url = "http://" + sub[rand(3)] + ".tile.opencyclemap.org/cycle/" + z + "/" + x + "/" + y + ".png";
+												var url = "http://toolserver.org/tiles/hikebike/" + z + "/" + x + "/" + y + ".png";
 												return url;
 											}
 										},
