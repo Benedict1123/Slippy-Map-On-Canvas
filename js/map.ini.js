@@ -16,11 +16,15 @@
                         lon = parseFloat(localStorage.getItem(ini.prefix + "lon"));
                         lat = parseFloat(localStorage.getItem(ini.prefix + "lat"));
                         zoom = parseFloat(localStorage.getItem(ini.prefix + "zoom"));
-                        map.pos.x =  map.pos.lon2posX(lon);
-                        map.pos.y =  map.pos.lat2posY(lat);
-                        if(zoom>-1){
-                        	map.pos.z = zoom;
-                        }                    } catch (e) {
+                    map.position.coords(
+                        {
+                            lon: parseFloat(lon),
+                            lat: parseFloat(lat),
+                            zoom: parseFloat(zoom)
+                        });
+
+
+					} catch (e) {
                         slippymap.debug('localStorage: ' + e);
                     }
                 },
@@ -39,7 +43,8 @@
                     	return;
                     }
                     slippymap.debug("localStorage, update");
-                    var coords = map.pos.coords();
+                    var coords = map.position.coords();
+                    
                     try {
                         localStorage.setItem(ini.prefix + "lon", coords.lon);
                         localStorage.setItem(ini.prefix + "lat", coords.lat);

@@ -67,14 +67,7 @@
                         }
                         map.renderer.context = map.renderer.canvas.getContext("2d");
                         map.renderer.sortLayers();
-                        coords = {
-                            z:  (map.position && map.position.z) || options.zoom,
-                            x: (map.position && map.position.x) || map.position.lon2posX(options.lon),
-                            y: (map.position && map.position.y) || map.position.lat2posY(options.lat)
-                        };
                         map.events.init();
-                        map.position.center(coords);
-                        map.renderer.update();
                     } else {
                         $.slippymap.debug("canvas not found");
                     }
@@ -367,7 +360,6 @@
                             );
                             return true;
                         } catch (e) {
-                        console.log(e);
                             map.renderer.blank(
                                 fallbackColor,
                                 dx,
@@ -1056,6 +1048,7 @@
             return { /* public functions */
                 init: function (config) { /* init extensions first */
                     var e, sub;
+                    map.init();
                     for (e in slippymap.extension) {
                         if (slippymap.extension.hasOwnProperty(e)) {
                             if (typeof slippymap.extension[e] === 'function') {
@@ -1079,7 +1072,13 @@
                     if (typeof config === 'function') {
                         config(this);
                     }
-                    map.init();
+                    var   coords = {
+                            z:  (map.position && map.position.z) || options.zoom,
+                            x: (map.position && map.position.x) || map.position.lon2posX(options.lon),
+                            y: (map.position && map.position.y) || map.position.lat2posY(options.lat)
+                        };
+					map.position.center(coords);
+
                     return this;
                 },
                 center: function (coords, options) {

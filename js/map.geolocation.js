@@ -47,12 +47,12 @@
                     if (!geo.lastUpdate && position.coords && position.coords.accuracy) {
                         for (var z = 0; z < 17 && metersPerPixel[z] * map.renderer.tilesize > position.coords.accuracy; z++) {}
                         if (z) {
-                            map.pos.coords({lon: position.coords.longitude, lat: position.coords.latitude, zoom: z});
+                            map.position.coords({lon: position.coords.longitude, lat: position.coords.latitude, zoom: z});
                         } else {
-                            map.pos.coords({lon: position.coords.longitude, lat: position.coords.latitude});
+                            map.position.coords({lon: position.coords.longitude, lat: position.coords.latitude});
                         }
                     } else {
-                    	map.pos.coords({lon: position.coords.longitude, lat: position.coords.latitude});
+                    	map.position.coords({lon: position.coords.longitude, lat: position.coords.latitude});
                     }
                     geo.lastUpdate = now;
                 }
