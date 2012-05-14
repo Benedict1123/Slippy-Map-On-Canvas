@@ -15,11 +15,14 @@
 					'osm' : {
 						alpha : 1,
 						url :	function (x, y, z) {
-									var rand = function (n) {
-									return Math.floor(Math.random() * n);
-								};
-								var sub = ["a", "b", "c"];
-								var url = "http://" + sub[rand(3)] + ".tile.openstreetmap.org/" + z + "/" + x + "/" + y + ".png";
+								var url = "http://toolserver.org/tiles/hikebike/" + z + "/" + x + "/" + y + ".png";
+								return url;
+						}
+					},
+					'hills' : {
+						alpha : 1,
+						url :	function (x, y, z) {
+								var url = "http://toolserver.org/~cmarqu/hill/"+z+"/"+x+"/"+y+".png";
 								return url;
 						}
 					}
