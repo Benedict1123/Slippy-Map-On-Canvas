@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html manifest="../map.manifest">
+	<head>
+		<meta charset="utf-8">
+		<title>Slippy Map on Canvas (HTML5) | geolocation</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<link rel="apple-touch-icon-precomposed" href="../images/touch-icon.png" />
+		<link href="../css/map.css" rel="stylesheet" type="text/css" media="all" />
+		<link href="../css/ui.css" rel="stylesheet" type="text/css" media="all" />
+		<script src="../js/map.js" type="text/javascript"></script>
+		<script src="../js/map.geolocation.js" type="text/javascript"></script>
+		<script type="text/javascript">
+			var watch = { id: 0, index: 0}; 
+			document.addEventListener('DOMContentLoaded', function(){
+				var map = slippymap().init();
+				document.querySelectorAll("#buttons .zoomin")[0].addEventListener('click', map.zoomIn, false);
+				document.querySelectorAll("#buttons .zoomout")[0].addEventListener('click', map.zoomOut, false);
+				document.querySelectorAll("#buttons .gps")[0].addEventListener('click', function(){
+					document.getElementById("geo").setAttribute("dispatched", true);
+					if(watch.id !== 0){
+						map.geolocation.clearWatch(watch.id)
+						map.markers({});
+						document.getElementById("hud").style.display = "none";
+						watch.id = 0;
+						watch.index = 0;
+						document.getElementById("geo").removeAttribute("dispatched");
+					} else {
+						watch.id = map.geolocation.watch(
+							function(position){
+								if (watch.index === 0) {
+									map.geolocation.displayPosition(position);
+									document.getElementById("hud").style.display = "block";
+									map.marker('location', {	
+										src : "../images/mylocation.png",
+										lon : position.coords.longitude,
+										lat : position.coords.latitude,
+										offsetX : -24,
+										offsetY : -24
+									});
+								} else {
+									map.marker('location', {
+										lon : position.coords.longitude,
+										lat : position.coords.latitude									
+									}, true);
+								}
+								document.getElementById("heading").innerHTML = position.coords.heading;
+								document.getElementById("speed").innerHTML = position.coords.speed;
+								document.getElementById("accuracy").innerHTML = position.coords.accuracy;
+								document.getElementById("timestamp").innerHTML = new Date(position.timestamp);
+								document.getElementById("count").innerHTML = watch.index;
+
+								watch.index++;
+							},
+							function(error){
+								map.geolocation.displayError(error);
+	    	                    document.getElementById("geo").removeAttribute("dispatched");
+		                        document.getElementById("geo").setAttribute("error", true);
+							},
+							{maximumAge: 0, frequency: 10000}						
+						);
+					}
+				}, false);
+			}, false);
+		</script>
+		<style>
+			#hud {
+				position: absolute;
+				top: 5px;
+				left: 5px;
+				z-index: 999;
+				display: none;
+			}
+			#hud ul {
+				background: rgba(255,255,255,0.5);
+				margin:0;
+				padding: 5px;
+				list-style: none;
+				list-style-position: none;
+			}		
+			#hud li {
+				margin:0;
+				padding:0;
+				min-width: 75px;		
+			}
+			
+		</style>
+	</head>
+	<body>
+		<canvas id="map">
+			Your  browser doesn't support canvas elements.			
+		</canvas>
+		<ul id="buttons">
+			<li><a class="zoomin">+</a></li>
+			<li><a class="zoomout">-</a></li>
+			<li><a class="gps" id="geo">x</a></li>
+		</ul>
+		<div id="hud">
+		<ul>
+		<li>heading: <span id="heading"></span></li>
+		<li>speed: <span id="speed"></span></li>
+		<li>accuracy: <span id="accuracy"></span></li>
+		<li>timestamp: <span id="timestamp"></span></li>
+		<li>count: <span id="count"></span></li>
+		</ul>
+		</div>
+	</body>
+</html>

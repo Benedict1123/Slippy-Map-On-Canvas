@@ -8,13 +8,24 @@
 		<script type="text/javascript">
 			document.addEventListener('DOMContentLoaded', function(){
 				var console_div = document.getElementById("console");
+				var lastDiff = 0;;
 				var log = function (e) {
-					var now = new Date().toLocaleString();
 					var entry = document.createElement("p");
+					var meta, diff;
+					if(event.targetTouches){
+						meta = event.targetTouches.length;
+						if(event.targetTouches.length === 2){
+							diff = 	Math.sqrt(
+									Math.pow(event.targetTouches[0].clientX-event.targetTouches[1].clientX,2)+
+									Math.pow(event.targetTouches[0].clientY-event.targetTouches[1].clientY,2));
+							meta = 1+((diff-lastDiff)/100);
+							lastDiff = diff;
+						}
+					}
 					entry.innerHTML = [ 
 						e.type,
 						"<span>",
-						now,
+						meta,
 						"</span>"
 					].join("");
 						

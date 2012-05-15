@@ -20,6 +20,13 @@
 					map.geolocation.location(
 						function(position){
 							map.geolocation.displayPosition(position);
+							map.marker('location', {	
+								src : "../images/mylocation.png",
+								lon : position.coords.longitude,
+								lat : position.coords.latitude,
+								offsetX : -24,
+								offsetY : -24
+							});
 							document.getElementById("geo").removeAttribute("dispatched");
 							document.getElementById("geo").setAttribute("success", true);
 						},
@@ -27,7 +34,8 @@
 							map.geolocation.displayError(error);
     	                    document.getElementById("geo").removeAttribute("dispatched");
 	                        document.getElementById("geo").setAttribute("error", true);
-						}						
+						},
+						{maximumAge: 0}						
 					);
 				}, false);
 			}, false);
