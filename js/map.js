@@ -57,6 +57,7 @@
                 preloadMargin: options.preloadMargin,
                 zMin : options.zMin,
                 zMax : options.zMax,
+                maxImageLoadingCount : 10,
                 init: function () {
                     var coords;
                     if ($.document.getElementById(options.div)) {
@@ -79,6 +80,36 @@
                     dragging: false,
                     lastTouchEvent: {},
                     lastTouchEventBeforeLast: {},
+                    momentum: {
+                    	index: 0,
+                    	history: [],
+                    	amplifier: { s:20, xy: 1},
+                    	duration: function(){
+	                   		var average = 0, i;
+							for (i=0; i < this.history.length; i++) {
+								average = average + Math.sqrt(Math.pow(this.history[i][0], 2) + Math.pow(this.history[i][1], 2));
+							}
+							return this.amplifier.s*(average/this.history.length);
+                    	},
+						x: function(){
+	                   		var average = 0, i;
+							for (i=0; i < this.history.length; i++) {
+								average = average + this.history[i][0];
+							}
+							return this.amplifier.xy*(average/this.history.length);
+                    	},
+						y: function(){
+	                   		var average = 0, i;
+							for (i=0; i < this.history.length; i++) {
+								average = average + this.history[i][1];
+							}
+							return this.amplifier.xy*(average/this.history.length);
+                    	},
+                    	clear: function () {
+                    		this.history = [];
+                    	}
+
+                    },
                     update : function (event) {
                         $.clearTimeout(map.renderer.refreshTimeout);
                         map.renderer.refreshTimeout = $.setTimeout(map.renderer.refresh, 0);
@@ -115,24 +146,19 @@
                         }
                         map.events.lastMouseX = x;
                         map.events.lastMouseY = y;
-                        map.events.momentumX = 0;
-                        map.events.momentumY = 0;
                         map.events.preventDefault(event);
                         return true;
                     },
                     mouseMove: function (event) {
                         var x, y, dX, dY;
-                        if (!event) {
-                            event = $.event;
-                        }
                         x = event.clientX - map.renderer.canvas.offsetLeft;
                         y = event.clientY - map.renderer.canvas.offsetTop;
                         if (map.events.dragging === true) {
                             dX = x - map.events.lastMouseX;
                             dY = y - map.events.lastMouseY;
                             if (map.scrollMomentum) {
-                                map.events.momentumX = dX;
-                                map.events.momentumY = dY;
+                                map.events.momentum.history[map.events.momentum.index] = [dX, dY];
+                                map.events.momentum.index = (map.events.momentum.index + 1) % 5;
                             }
                             map.position.move(-dX * map.pow(2, map.zMax - map.position.z), -dY * map.pow(2, map.zMax - map.position.z));
                         }
@@ -142,10 +168,15 @@
                         return true;
                     },
                     mouseUp: function (event) {
-                        if (map.events.dragging && map.scrollMomentum && (map.events.momentumX !== 0 || map.events.momentumY !== 0)) {
+                        var duration = map.events.momentum.duration();
+                        if (map.events.dragging && map.scrollMomentum && duration !== 0) {
                             map.events.dragging = false;
-                            var duration = 50 * Math.round(Math.sqrt(Math.pow(map.events.momentumX, 2) + Math.pow(map.events.momentumY, 2)));
-                            map.position.move(-map.events.momentumX * map.pow(2, map.zMax - map.position.z) * 4, 4 * -map.events.momentumY * map.pow(2, map.zMax - map.position.z), {animated: true, duration: duration});
+                            map.position.move(
+                            	-map.events.momentum.x() * map.pow(2, map.zMax - map.position.z),
+                            	-map.events.momentum.y() * map.pow(2, map.zMax - map.position.z),
+                            	{animated: true, duration: duration}
+                            );
+                            map.events.momentum.clear();
                         } else {
                             map.events.dragging = false;
                             map.position.moveend();
@@ -233,7 +264,6 @@
                         } else {
                             touches = event.changedTouches;
                         }
-                        first = touches[0];
                         if (touches.length === 1) {
                             switch (event.type) {
                             case 'touchstart':
@@ -249,6 +279,7 @@
                             default:
                                 return;
                             }
+	                        first = touches[0];
                             if (map.events.lastTouchEventBeforeLast && event.type === 'touchend' && map.events.lastTouchEvent.type === 'touchstart' && map.events.lastTouchEventBeforeLast.type === 'touchend' && event.x === map.events.lastTouchEventBeforeLast.x && event.y === map.events.lastTouchEventBeforeLast.y && now() - map.events.lastTouchEventBeforeLast.timeStamp < 500) {
                                 map.events.lastTouchEventBeforeLast = false;
                                 map.events.lastTouchEvent.timeStamp = now();
@@ -263,6 +294,24 @@
                             map.events.preventDefault(event);
                             return true;
                         }
+                        if (touches.length === 2 && event.type === 'touchstart') {
+							map.events.lastTouchEvent.distance = 0;
+						}
+                        if (touches.length === 2 && event.type === 'touchmove') {
+							var distance = Math.sqrt(
+									Math.pow(event.targetTouches[0].clientX-event.targetTouches[1].clientX,2)+
+									Math.pow(event.targetTouches[0].clientY-event.targetTouches[1].clientY,2));
+							if(map.events.lastTouchEvent.distance){
+	                        	simulatedEvent = document.createEvent('Event');
+    	                    	simulatedEvent.initEvent('gesturechange', false, false);
+        	                    simulatedEvent.scale = 1+((distance-map.events.lastTouchEvent.distance)/10);
+            	                simulatedEvent.simulated = true;
+                	        	map.renderer.canvas.dispatchEvent(simulatedEvent);
+                    	        map.events.preventDefault(event);
+                    	    }
+                        	map.events.lastTouchEvent.distance = distance;
+                            return true;
+						}                        
                         map.events.preventDefault(event);
                         return false;
                     },
@@ -331,6 +380,7 @@
                     refreshTimeout: 0,
                     refreshFPS: 50,
                     roundToPixel : false,
+                    loadingCue : 0,
                     blank : function (color, x, y, width, height) {
                         map.renderer.context.fillStyle = color;
                         map.renderer.context.fillRect(x, y, width, height);
@@ -374,12 +424,21 @@
                         if (typeof map.renderer.tiles[t] === 'undefined') {
                             map.renderer.tiles[t] = [];
                         }
+                        if(map.renderer.loadingCue>map.maxImageLoadingCount && z !== map.position.z){
+							//skipping
+                        	return;
+                        }
+                        map.renderer.loadingCue++;
                         map.renderer.tiles[t][id] = new $.Image();
                         map.renderer.tiles[t][id].lastDrawnId = 0;
                         map.renderer.tilecount = map.renderer.tilecount + 1;
                         map.renderer.tiles[t][id].src = tileprovider(x, y, z, id);
-                        map.renderer.tiles[t][id].onload = map.renderer.update;
+                        map.renderer.tiles[t][id].onload = function(){
+							map.renderer.loadingCue--;
+                        	map.renderer.update();
+                        }
                         map.renderer.tiles[t][id].onerror = function () {
+							map.renderer.loadingCue--;
                             this.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
                             this.onload = function () {};
                         };
@@ -995,8 +1054,9 @@
                                 });
                                 map.position.animation.stop();
                             } else {
-                                progressXY = map.position.animation.ease("easeInCubic");
-                                progressZ = map.position.animation.ease("easeInSine");
+                                progressXY = map.position.animation.ease("easeInExpo");
+                                progressZ = map.position.animation.ease("easeInCubic");;
+                                
                                 if (typeof map.position.animation.descriptor.to.x !== 'undefined' && map.position.animation.descriptor.to.x !== false) {
                                     destX = map.position.animation.descriptor.from.x * progressXY + map.position.animation.descriptor.to.x * (1 - progressXY);
                                 }
@@ -1224,11 +1284,20 @@
                     map.renderer.update();
                     return this;
                 },
-                marker: function (id, marker) {
+                marker: function (id, marker, isUpdate) {
+                	var property;
                     if (id && typeof marker !== 'object') {
                         return map.markers[id];
                     }
-                    map.markers[id] = marker;
+                    if(isUpdate === true){
+						for (property in marker) {
+                    		if (marker.hasOwnProperty(property)) {
+			                    map.markers[id][property] = marker[property];
+                    		}
+                    	}
+                    } else {
+	                    map.markers[id] = marker;
+	                }
                     map.renderer.update();
                     return this;
                 },

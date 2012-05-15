@@ -28,13 +28,16 @@
                 },
                 watch: function (success, error, options) {
                     slippymap.debug("dispatch watchPosition");
-                    geo.gl.watchPosition(
+                    return geo.gl.watchPosition(
                     success || geo.displayPosition, error || geo.displayError, options || {
                         maximumAge: 600000,
                         timeout: 3000,
                         enableHighAccuracy: false,
                         responseTime: 2
                     });
+                },
+                clearWatch: function (id){
+                	geo.gl.clearWatch(id);
                 },
                 displayError: function (error) {
                     slippymap.debug("getCurrentPosition error: " + (error.message || " - "));
