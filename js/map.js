@@ -81,33 +81,33 @@
                     lastTouchEvent: {},
                     lastTouchEventBeforeLast: {},
                     momentum: {
-                    	index: 0,
-                    	history: [],
-                    	amplifier: { s:20, xy: 1},
-                    	duration: function(){
-	                   		var average = 0, i;
-							for (i=0; i < this.history.length; i++) {
-								average = average + Math.sqrt(Math.pow(this.history[i][0], 2) + Math.pow(this.history[i][1], 2));
-							}
-							return this.amplifier.s*(average/this.history.length);
-                    	},
-						x: function(){
-	                   		var average = 0, i;
-							for (i=0; i < this.history.length; i++) {
-								average = average + this.history[i][0];
-							}
-							return this.amplifier.xy*(average/this.history.length);
-                    	},
-						y: function(){
-	                   		var average = 0, i;
-							for (i=0; i < this.history.length; i++) {
-								average = average + this.history[i][1];
-							}
-							return this.amplifier.xy*(average/this.history.length);
-                    	},
-                    	clear: function () {
-                    		this.history = [];
-                    	}
+                        index: 0,
+                        history: [],
+                        amplifier: {s: 20, xy: 1},
+                        duration: function () {
+                            var average = 0, i;
+                            for (i = 0; i < this.history.length; i = i + 1) {
+                                average = average + Math.sqrt(Math.pow(this.history[i][0], 2) + Math.pow(this.history[i][1], 2));
+                            }
+                            return this.amplifier.s * (average / this.history.length);
+                        },
+                        x: function () {
+                            var average = 0, i;
+                            for (i = 0; i < this.history.length; i = i + 1) {
+                                average = average + this.history[i][0];
+                            }
+                            return this.amplifier.xy * (average / this.history.length);
+                        },
+                        y: function () {
+                            var average = 0, i;
+                            for (i = 0; i < this.history.length; i = i + 1) {
+                                average = average + this.history[i][1];
+                            }
+                            return this.amplifier.xy * (average / this.history.length);
+                        },
+                        clear: function () {
+                            this.history = [];
+                        }
 
                     },
                     update : function (event) {
@@ -172,9 +172,9 @@
                         if (map.events.dragging && map.scrollMomentum && duration !== 0) {
                             map.events.dragging = false;
                             map.position.move(
-                            	-map.events.momentum.x() * map.pow(2, map.zMax - map.position.z),
-                            	-map.events.momentum.y() * map.pow(2, map.zMax - map.position.z),
-                            	{animated: true, duration: duration}
+                                -map.events.momentum.x() * map.pow(2, map.zMax - map.position.z),
+                                -map.events.momentum.y() * map.pow(2, map.zMax - map.position.z),
+                                {animated: true, duration: duration}
                             );
                             map.events.momentum.clear();
                         } else {
@@ -254,7 +254,8 @@
                     },
                     /* maps touch events to mouse events */
                     touch: function (event) {
-                        var now, touches, type, first, simulatedEvent;
+                        var now, touches, type, first, simulatedEvent, distance;
+
                         map.position.animation.stop();
                         now = function () {
                             return (new $.Date()).getTime();
@@ -279,7 +280,7 @@
                             default:
                                 return;
                             }
-	                        first = touches[0];
+                            first = touches[0];
                             if (map.events.lastTouchEventBeforeLast && event.type === 'touchend' && map.events.lastTouchEvent.type === 'touchstart' && map.events.lastTouchEventBeforeLast.type === 'touchend' && event.x === map.events.lastTouchEventBeforeLast.x && event.y === map.events.lastTouchEventBeforeLast.y && now() - map.events.lastTouchEventBeforeLast.timeStamp < 500) {
                                 map.events.lastTouchEventBeforeLast = false;
                                 map.events.lastTouchEvent.timeStamp = now();
@@ -295,23 +296,24 @@
                             return true;
                         }
                         if (touches.length === 2 && event.type === 'touchstart') {
-							map.events.lastTouchEvent.distance = 0;
-						}
+                            map.events.lastTouchEvent.distance = 0;
+                        }
                         if (touches.length === 2 && event.type === 'touchmove') {
-							var distance = Math.sqrt(
-									Math.pow(event.targetTouches[0].clientX-event.targetTouches[1].clientX,2)+
-									Math.pow(event.targetTouches[0].clientY-event.targetTouches[1].clientY,2));
-							if(map.events.lastTouchEvent.distance){
-	                        	simulatedEvent = document.createEvent('Event');
-    	                    	simulatedEvent.initEvent('gesturechange', false, false);
-        	                    simulatedEvent.scale = 1+((distance-map.events.lastTouchEvent.distance)/10);
-            	                simulatedEvent.simulated = true;
-                	        	map.renderer.canvas.dispatchEvent(simulatedEvent);
-                    	        map.events.preventDefault(event);
-                    	    }
-                        	map.events.lastTouchEvent.distance = distance;
+                            distance = $.Math.sqrt(
+                                $.Math.pow(event.targetTouches[0].clientX - event.targetTouches[1].clientX, 2) +
+                                    $.Math.pow(event.targetTouches[0].clientY - event.targetTouches[1].clientY, 2)
+                            );
+                            if (map.events.lastTouchEvent.distance) {
+                                simulatedEvent = $.document.createEvent('Event');
+                                simulatedEvent.initEvent('gesturechange', false, false);
+                                simulatedEvent.scale = 1 + ((distance - map.events.lastTouchEvent.distance) / 10);
+                                simulatedEvent.simulated = true;
+                                map.renderer.canvas.dispatchEvent(simulatedEvent);
+                                map.events.preventDefault(event);
+                            }
+                            map.events.lastTouchEvent.distance = distance;
                             return true;
-						}                        
+                        }
                         map.events.preventDefault(event);
                         return false;
                     },
@@ -424,21 +426,21 @@
                         if (typeof map.renderer.tiles[t] === 'undefined') {
                             map.renderer.tiles[t] = [];
                         }
-                        if(map.renderer.loadingCue>map.maxImageLoadingCount && z !== map.position.z){
-							//skipping
-                        	return;
+                        if (map.renderer.loadingCue > map.maxImageLoadingCount && z !== map.position.z) {
+                            //skipping
+                            return;
                         }
-                        map.renderer.loadingCue++;
+                        map.renderer.loadingCue = map.renderer.loadingCue + 1;
                         map.renderer.tiles[t][id] = new $.Image();
                         map.renderer.tiles[t][id].lastDrawnId = 0;
                         map.renderer.tilecount = map.renderer.tilecount + 1;
                         map.renderer.tiles[t][id].src = tileprovider(x, y, z, id);
-                        map.renderer.tiles[t][id].onload = function(){
-							map.renderer.loadingCue--;
-                        	map.renderer.update();
-                        }
+                        map.renderer.tiles[t][id].onload = function () {
+	                        map.renderer.loadingCue = map.renderer.loadingCue - 1;
+                            map.renderer.update();
+                        };
                         map.renderer.tiles[t][id].onerror = function () {
-							map.renderer.loadingCue--;
+	                        map.renderer.loadingCue = map.renderer.loadingCue - 1;
                             this.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
                             this.onload = function () {};
                         };
@@ -715,7 +717,7 @@
                         }
                     ],
                     update: function () {
-                        var event = document.createEvent('Event');
+                        var event = $.document.createEvent('Event');
                         event.initEvent('update', false, false);
                         map.renderer.canvas.dispatchEvent(event);
                     },
@@ -727,9 +729,10 @@
                             viewport,
                             layer,
                             i,
-                            start;
+                            start,
+                            event;
 
-                        var event = document.createEvent('Event');
+                        event = $.document.createEvent('Event');
                         event.initEvent('refresh', false, false);
                         map.renderer.canvas.dispatchEvent(event);
 
@@ -967,17 +970,17 @@
                         return (180 / $.Math.PI * $.Math.atan(0.5 * ($.Math.exp(n) - $.Math.exp(-n))));
                     },
                     zoomed: function (options) {
-                        var event = document.createEvent('Event');
+                        var event = $.document.createEvent('Event');
                         event.initEvent('zoomed', false, false);
                         map.renderer.canvas.dispatchEvent(event);
                     },
                     moved: function (options) {
-                        var event = document.createEvent('Event');
+                        var event = $.document.createEvent('Event');
                         event.initEvent('moved', false, false);
                         map.renderer.canvas.dispatchEvent(event);
                     },
                     moveend: function (options) {
-                        var event = document.createEvent('Event');
+                        var event = $.document.createEvent('Event');
                         event.initEvent('moveend', false, false);
                         map.renderer.canvas.dispatchEvent(event);
                     },
@@ -1055,8 +1058,8 @@
                                 map.position.animation.stop();
                             } else {
                                 progressXY = map.position.animation.ease("easeInExpo");
-                                progressZ = map.position.animation.ease("easeInCubic");;
-                                
+                                progressZ = map.position.animation.ease("easeInCubic");
+
                                 if (typeof map.position.animation.descriptor.to.x !== 'undefined' && map.position.animation.descriptor.to.x !== false) {
                                     destX = map.position.animation.descriptor.from.x * progressXY + map.position.animation.descriptor.to.x * (1 - progressXY);
                                 }
@@ -1107,7 +1110,7 @@
             };
             return { /* public functions */
                 init: function (config) { /* init extensions first */
-                    var e, sub;
+                    var e, sub, coords;
                     map.init();
                     for (e in slippymap.extension) {
                         if (slippymap.extension.hasOwnProperty(e)) {
@@ -1132,12 +1135,12 @@
                     if (typeof config === 'function') {
                         config(this);
                     }
-                    var   coords = {
-                            z:  (map.position && map.position.z) || options.zoom,
-                            x: (map.position && map.position.x) || map.position.lon2posX(options.lon),
-                            y: (map.position && map.position.y) || map.position.lat2posY(options.lat)
-                        };
-					map.position.center(coords);
+                    coords = {
+                        z:  (map.position && map.position.z) || options.zoom,
+                        x: (map.position && map.position.x) || map.position.lon2posX(options.lon),
+                        y: (map.position && map.position.y) || map.position.lat2posY(options.lat)
+                    };
+                    map.position.center(coords);
 
                     return this;
                 },
@@ -1285,19 +1288,19 @@
                     return this;
                 },
                 marker: function (id, marker, isUpdate) {
-                	var property;
+                    var property;
                     if (id && typeof marker !== 'object') {
                         return map.markers[id];
                     }
-                    if(isUpdate === true){
-						for (property in marker) {
-                    		if (marker.hasOwnProperty(property)) {
-			                    map.markers[id][property] = marker[property];
-                    		}
-                    	}
+                    if (isUpdate === true) {
+                        for (property in marker) {
+                            if (marker.hasOwnProperty(property)) {
+                                map.markers[id][property] = marker[property];
+                            }
+                        }
                     } else {
-	                    map.markers[id] = marker;
-	                }
+                        map.markers[id] = marker;
+                    }
                     map.renderer.update();
                     return this;
                 },
