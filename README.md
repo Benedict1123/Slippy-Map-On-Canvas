@@ -47,7 +47,7 @@ Public Functions
 *   coords({lon, lat, zoom}) - parameter object optional - unit deg
 
         get: map.coords();
-        set: map.center({lon: 1, lat: 2, zoom: 3});
+        set: map.coords({lon: 1, lat: 2, zoom: 3});
 
 *   zoom(z) - parameter number optional
 
@@ -71,21 +71,21 @@ Public Functions
         get: map.markers();
         set: map.markers({  
                         'Berlin' : 
-                        {   src : "../images/marker.png",
+                        {   src : "images/marker.png",
                             lon : 13.409500,
                             lat : 52.522488,
                             offsetX : -11,
                             offsetY : -25
                         },
                         'Moskva' : 
-                        {   src : "../images/marker.png",
+                        {   src : "images/marker.png",
                             lon : 37.617633,
                             lat : 55.755786,
                             offsetX : -11,
                             offsetY : -25
                         },
                         'Hong Kong' : 
-                        {   src : "../images/marker.png",
+                        {   src : "images/marker.png",
                             lon : 114.10494,
                             lat : 22.381111,
                             offsetX : -11,
@@ -97,7 +97,7 @@ Public Functions
 
         get: map.marker('Berlin');
         set: map.marker('Berlin',{  
-                            src : "../images/alex.png",
+                            src : "images/alex.png",
                             lon : 13.409500,
                             lat : 52.522488,
                             offsetX : -11,
